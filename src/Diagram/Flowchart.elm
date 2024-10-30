@@ -1,4 +1,4 @@
-module Diagram.FlowChart exposing (parseFlowchart, renderFlowchart)
+module Diagram.Flowchart exposing (parseFlowchart, renderFlowchart)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -19,7 +19,7 @@ type alias DiagramData =
 
 parseFlowchart : String -> Maybe DiagramData
 parseFlowchart input =
-    if String.startsWith "flowchart TD" input then
+    if String.startsWith "flowchart" input then
         Just
             { nodes =
                 [ { id = "A", label = "Christmas", x = 100, y = 100 }

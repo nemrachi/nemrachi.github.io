@@ -4385,7 +4385,7 @@ function _Browser_load(url)
 	}));
 }
 var $author$project$Main$Unknown = {$: 'Unknown'};
-var $author$project$Main$initialModel = {diagramType: $author$project$Main$Unknown, userInput: ''};
+var $author$project$Main$initialModel = {diagramType: $author$project$Main$Unknown, userText: ''};
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -5198,8 +5198,26 @@ var $elm$browser$Browser$sandbox = function (impl) {
 };
 var $author$project$Main$Flowchart = {$: 'Flowchart'};
 var $author$project$Main$StateDiagram = {$: 'StateDiagram'};
-var $author$project$Main$detectDiagramType = function (input) {
-	return A2($elm$core$String$startsWith, 'stateDiagram-v2', input) ? $author$project$Main$StateDiagram : (A2($elm$core$String$startsWith, 'flowchart TD', input) ? $author$project$Main$Flowchart : $author$project$Main$Unknown);
+var $elm$core$String$lines = _String_lines;
+var $author$project$Main$getFirstLine = function (text) {
+	var _v0 = $elm$core$String$lines(text);
+	if (_v0.b) {
+		var first = _v0.a;
+		return first;
+	} else {
+		return '';
+	}
+};
+var $author$project$Main$detectDiagramType = function (text) {
+	var _v0 = $author$project$Main$getFirstLine(text);
+	switch (_v0) {
+		case 'stateDiagram':
+			return $author$project$Main$StateDiagram;
+		case 'flowchart':
+			return $author$project$Main$Flowchart;
+		default:
+			return $author$project$Main$Unknown;
+	}
 };
 var $author$project$Main$update = F2(
 	function (msg, model) {
@@ -5207,11 +5225,20 @@ var $author$project$Main$update = F2(
 		var diagramType = $author$project$Main$detectDiagramType(newText);
 		return _Utils_update(
 			model,
-			{diagramType: diagramType, userInput: newText});
+			{diagramType: diagramType, userText: newText});
 	});
-var $author$project$Main$InputChange = function (a) {
-	return {$: 'InputChange', a: a};
+var $author$project$Main$TextChange = function (a) {
+	return {$: 'TextChange', a: a};
 };
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -5247,17 +5274,9 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $author$project$Diagram$FlowChart$parseFlowchart = function (input) {
-	return A2($elm$core$String$startsWith, 'flowchart TD', input) ? $elm$core$Maybe$Just(
+var $author$project$Diagram$Flowchart$parseFlowchart = function (input) {
+	return A2($elm$core$String$startsWith, 'flowchart', input) ? $elm$core$Maybe$Just(
 		{
 			nodes: _List_fromArray(
 				[
@@ -5273,7 +5292,7 @@ var $author$project$Diagram$FlowChart$parseFlowchart = function (input) {
 		}) : $elm$core$Maybe$Nothing;
 };
 var $author$project$Diagram$StateDiagram$parseStateDiagram = function (input) {
-	return A2($elm$core$String$startsWith, 'stateDiagram-v2', input) ? $elm$core$Maybe$Just(
+	return A2($elm$core$String$startsWith, 'stateDiagram', input) ? $elm$core$Maybe$Just(
 		{
 			nodes: _List_fromArray(
 				[
@@ -5313,7 +5332,7 @@ var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var $author$project$Diagram$FlowChart$renderNode = function (node) {
+var $author$project$Diagram$Flowchart$renderNode = function (node) {
 	return A2(
 		$elm$svg$Svg$g,
 		_List_Nil,
@@ -5376,7 +5395,7 @@ var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
-var $author$project$Diagram$FlowChart$renderTransition = F2(
+var $author$project$Diagram$Flowchart$renderTransition = F2(
 	function (nodes, transition) {
 		var toNode = $elm$core$List$head(
 			A2(
@@ -5423,7 +5442,7 @@ var $author$project$Diagram$FlowChart$renderTransition = F2(
 		}
 	});
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $author$project$Diagram$FlowChart$renderFlowchart = function (data) {
+var $author$project$Diagram$Flowchart$renderFlowchart = function (data) {
 	return A2(
 		$elm$svg$Svg$svg,
 		_List_fromArray(
@@ -5434,10 +5453,10 @@ var $author$project$Diagram$FlowChart$renderFlowchart = function (data) {
 		$elm$core$List$concat(
 			_List_fromArray(
 				[
-					A2($elm$core$List$map, $author$project$Diagram$FlowChart$renderNode, data.nodes),
+					A2($elm$core$List$map, $author$project$Diagram$Flowchart$renderNode, data.nodes),
 					A2(
 					$elm$core$List$map,
-					$author$project$Diagram$FlowChart$renderTransition(data.nodes),
+					$author$project$Diagram$Flowchart$renderTransition(data.nodes),
 					data.transitions)
 				])));
 };
@@ -5549,7 +5568,7 @@ var $author$project$Main$renderDiagram = function (model) {
 	var _v0 = model.diagramType;
 	switch (_v0.$) {
 		case 'StateDiagram':
-			var _v1 = $author$project$Diagram$StateDiagram$parseStateDiagram(model.userInput);
+			var _v1 = $author$project$Diagram$StateDiagram$parseStateDiagram(model.userText);
 			if (_v1.$ === 'Just') {
 				var parsedData = _v1.a;
 				return $author$project$Diagram$StateDiagram$renderStateDiagram(parsedData);
@@ -5563,10 +5582,10 @@ var $author$project$Main$renderDiagram = function (model) {
 						]));
 			}
 		case 'Flowchart':
-			var _v2 = $author$project$Diagram$FlowChart$parseFlowchart(model.userInput);
+			var _v2 = $author$project$Diagram$Flowchart$parseFlowchart(model.userText);
 			if (_v2.$ === 'Just') {
 				var parsedData = _v2.a;
-				return $author$project$Diagram$FlowChart$renderFlowchart(parsedData);
+				return $author$project$Diagram$Flowchart$renderFlowchart(parsedData);
 			} else {
 				return A2(
 					$elm$html$Html$div,
@@ -5577,17 +5596,9 @@ var $author$project$Main$renderDiagram = function (model) {
 						]));
 			}
 		default:
-			return A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Please provide a valid diagram type')
-					]));
+			return A2($elm$html$Html$div, _List_Nil, _List_Nil);
 	}
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$Main$view = function (model) {
@@ -5595,7 +5606,7 @@ var $author$project$Main$view = function (model) {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				A2($elm$html$Html$Attributes$style, 'display', 'flex')
+				$elm$html$Html$Attributes$class('flex-container')
 			]),
 		_List_fromArray(
 			[
@@ -5603,8 +5614,7 @@ var $author$project$Main$view = function (model) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						A2($elm$html$Html$Attributes$style, 'width', '50%'),
-						A2($elm$html$Html$Attributes$style, 'padding', '10px')
+						$elm$html$Html$Attributes$class('textarea-container')
 					]),
 				_List_fromArray(
 					[
@@ -5612,11 +5622,10 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$textarea,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$placeholder('Enter diagram syntax...'),
-								$elm$html$Html$Attributes$value(model.userInput),
-								$elm$html$Html$Events$onInput($author$project$Main$InputChange),
-								A2($elm$html$Html$Attributes$style, 'width', '100%'),
-								A2($elm$html$Html$Attributes$style, 'height', '100vh')
+								$elm$html$Html$Attributes$placeholder('Enter code to generate diagram...'),
+								$elm$html$Html$Attributes$value(model.userText),
+								$elm$html$Html$Events$onInput($author$project$Main$TextChange),
+								$elm$html$Html$Attributes$class('textarea')
 							]),
 						_List_Nil)
 					])),
@@ -5624,9 +5633,7 @@ var $author$project$Main$view = function (model) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						A2($elm$html$Html$Attributes$style, 'width', '50%'),
-						A2($elm$html$Html$Attributes$style, 'padding', '10px'),
-						A2($elm$html$Html$Attributes$style, 'border-left', '1px solid #ccc')
+						$elm$html$Html$Attributes$class('diagram-container')
 					]),
 				_List_fromArray(
 					[

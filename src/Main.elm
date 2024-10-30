@@ -1,18 +1,19 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, div, textarea)
-import Html.Attributes as Attr exposing (value, placeholder, style)
-import Html.Events exposing (onInput)
+import Diagram.Flowchart exposing (parseFlowchart, renderFlowchart)
 import Diagram.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
-import Diagram.FlowChart exposing (parseFlowchart, renderFlowchart)
+import Html exposing (Html, div, textarea)
+import Html.Attributes exposing (value, placeholder, class)
+import Html.Events exposing (onInput)
+import List exposing (..)
 
 
 -- MODEL
 
 type alias Model =
-    { userInput : String
-    , diagramType : DiagramType
+    { diagramType : DiagramType
+    , userText : String
     }
 
 type DiagramType
@@ -22,15 +23,15 @@ type DiagramType
 
 initialModel : Model
 initialModel =
-    { userInput = ""
-    , diagramType = Unknown
+    { diagramType = Unknown
+    , userText = ""
     }
 
 
 -- MESSAGES
 
 type Msg
-    = InputChange String
+    = TextChange String
 
 
 -- UPDATE
@@ -38,69 +39,77 @@ type Msg
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        InputChange newText ->
+        TextChange newText ->
             let
-                diagramType =
-                    detectDiagramType newText
+                diagramType = detectDiagramType newText
             in
-            { model | userInput = newText, diagramType = diagramType }
+                { model | diagramType = diagramType, userText = newText }
 
 
 -- VIEW
 
 view : Model -> Html Msg
 view model =
-    div [ style "display" "flex" ]
-        [ div [ style "width" "50%", style "padding" "10px" ]
+    div [ class "flex-container" ]
+        [ div [ class "textarea-container" ]
             [ textarea
-                [ placeholder "Enter diagram syntax..."
-                , value model.userInput
-                , onInput InputChange
-                , style "width" "100%", style "height" "100vh"
+                [ placeholder "Enter code to generate diagram..."
+                , value model.userText
+                , onInput TextChange
+                , class "textarea"
                 ]
                 []
             ]
-        , div [ style "width" "50%", style "padding" "10px", style "border-left" "1px solid #ccc" ]
+        , div [ class "diagram-container" ]
             [ renderDiagram model ]
         ]
 
 
--- DETECT DIAGRAM TYPE
+-- HELPER FUNCTIONS
 
 detectDiagramType : String -> DiagramType
-detectDiagramType input =
-    if String.startsWith "stateDiagram-v2" input then
-        StateDiagram
-    else if String.startsWith "flowchart TD" input then
-        Flowchart
-    else
-        Unknown
+detectDiagramType text =
+    case (getFirstLine text) of
+        "stateDiagram" ->
+            StateDiagram
+        "flowchart" ->
+            Flowchart
+        _ ->
+            Unknown
 
 
--- RENDER DIAGRAM
+getFirstLine : String -> String
+getFirstLine text =
+    case String.lines text of
+        first :: _ ->
+            first
+        _ ->
+            ""
+
 
 renderDiagram : Model -> Html msg
 renderDiagram model =
     case model.diagramType of
         StateDiagram ->
-            case parseStateDiagram model.userInput of
+            case parseStateDiagram model.userText of
                 Just parsedData ->
                     renderStateDiagram parsedData
                 Nothing ->
                     div [] [ Html.text "Invalid state diagram syntax" ]
 
         Flowchart ->
-            case parseFlowchart model.userInput of
+            case parseFlowchart model.userText of
                 Just parsedData ->
                     renderFlowchart parsedData
                 Nothing ->
                     div [] [ Html.text "Invalid flowchart syntax" ]
 
         Unknown ->
-            div [] [ Html.text "Please provide a valid diagram type" ]
+            div [] []
 
 
 -- MAIN
 
+main : Program () Model Msg
 main =
     Browser.sandbox { init = initialModel, update = update, view = view }

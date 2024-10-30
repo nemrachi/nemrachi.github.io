@@ -20,18 +20,18 @@ type alias DiagramData =
 parseStateDiagram : String -> Maybe DiagramData
 parseStateDiagram input =
     -- Simplified parser
-    if String.startsWith "stateDiagram-v2" input then
+    if String.startsWith "stateDiagram" input then
         Just
-            { nodes =
-                [ { id = "Still", x = 150, y = 100 }
-                , { id = "Moving", x = 300, y = 100 }
-                , { id = "Crash", x = 450, y = 100 }
-                ]
-            , transitions =
-                [ { from = "Still", to = "Moving" }
-                , { from = "Moving", to = "Crash" }
-                ]
-            }
+        { nodes =
+            [ { id = "Still", x = 150, y = 100 }
+            , { id = "Moving", x = 300, y = 100 }
+            , { id = "Crash", x = 450, y = 100 }
+            ]
+        , transitions =
+            [ { from = "Still", to = "Moving" }
+            , { from = "Moving", to = "Crash" }
+            ]
+        }
     else
         Nothing
 
