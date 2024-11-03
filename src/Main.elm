@@ -1,10 +1,11 @@
 module Main exposing (main)
 
 import Browser
+import CssClass
 import Diagram.Flowchart exposing (parseFlowchart, renderFlowchart)
 import Diagram.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
 import Html exposing (Html, div, textarea)
-import Html.Attributes exposing (value, placeholder, class)
+import Html.Attributes exposing (value, placeholder)
 import Html.Events exposing (onInput)
 import List exposing (..)
 
@@ -50,22 +51,23 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "flex-container" ]
-        [ div [ class "textarea-container" ]
-            [ textarea
-                [ placeholder "Enter code to generate diagram..."
-                , value model.userText
-                , onInput TextChange
-                , class "textarea"
-                ]
+    div CssClass.flexContainer
+        [ div CssClass.texrAreaContainer
+            [ textarea 
+                ([ placeholder "Enter code to generate diagram..."
+                 , value model.userText
+                 , onInput TextChange
+                 ]
+                 ++ CssClass.textArea
+                )
                 []
             ]
-        , div [ class "diagram-container" ]
+        , div CssClass.diagramContainer
             [ renderDiagram model ]
         ]
 
 
--- HELPER FUNCTIONS
+-- OTHER FUNCTIONS
 
 detectDiagramType : String -> DiagramType
 detectDiagramType text =

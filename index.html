@@ -5230,16 +5230,51 @@ var $author$project$Main$update = F2(
 var $author$project$Main$TextChange = function (a) {
 	return {$: 'TextChange', a: a};
 };
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
 	});
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $elm$core$String$trim = _String_trim;
+var $author$project$CssParser$parseAndStyle = function (styleDef) {
+	var _v0 = A2($elm$core$String$split, ':', styleDef);
+	if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
+		var key = _v0.a;
+		var _v1 = _v0.b;
+		var value = _v1.a;
+		return $elm$core$Maybe$Just(
+			A2(
+				$elm$html$Html$Attributes$style,
+				$elm$core$String$trim(key),
+				$elm$core$String$trim(value)));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$CssParser$cssStyle = function (css) {
+	return A2(
+		$elm$core$List$filterMap,
+		$author$project$CssParser$parseAndStyle,
+		A2($elm$core$String$split, ';', css));
+};
+var $author$project$CssClass$diagramContainer = $author$project$CssParser$cssStyle('\n        width: 50%;\n        padding: 10px;\n        border-left: 1px solid #ccc;\n        ');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $author$project$CssClass$flexContainer = $author$project$CssParser$cssStyle('display: flex;');
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -5274,6 +5309,14 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $author$project$Diagram$Flowchart$parseFlowchart = function (input) {
 	return A2($elm$core$String$startsWith, 'flowchart', input) ? $elm$core$Maybe$Just(
@@ -5599,42 +5642,36 @@ var $author$project$Main$renderDiagram = function (model) {
 			return A2($elm$html$Html$div, _List_Nil, _List_Nil);
 	}
 };
+var $author$project$CssClass$texrAreaContainer = $author$project$CssParser$cssStyle('\n        width: 50%;\n        padding: 10px;\n        ');
+var $author$project$CssClass$textArea = $author$project$CssParser$cssStyle('\n        width: 100%;\n        height: 100vh;\n        ');
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('flex-container')
-			]),
+		$author$project$CssClass$flexContainer,
 		_List_fromArray(
 			[
 				A2(
 				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('textarea-container')
-					]),
+				$author$project$CssClass$texrAreaContainer,
 				_List_fromArray(
 					[
 						A2(
 						$elm$html$Html$textarea,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$placeholder('Enter code to generate diagram...'),
-								$elm$html$Html$Attributes$value(model.userText),
-								$elm$html$Html$Events$onInput($author$project$Main$TextChange),
-								$elm$html$Html$Attributes$class('textarea')
-							]),
+						_Utils_ap(
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$placeholder('Enter code to generate diagram...'),
+									$elm$html$Html$Attributes$value(model.userText),
+									$elm$html$Html$Events$onInput($author$project$Main$TextChange)
+								]),
+							$author$project$CssClass$textArea),
 						_List_Nil)
 					])),
 				A2(
 				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('diagram-container')
-					]),
+				$author$project$CssClass$diagramContainer,
 				_List_fromArray(
 					[
 						$author$project$Main$renderDiagram(model)
