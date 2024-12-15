@@ -1,6 +1,6 @@
-module CssClass exposing (..)
+module Css.Class exposing (..)
 
-import CssParser exposing (cssStyle)
+import Css.Parser exposing (cssStyle)
 import Html
 
 
@@ -19,8 +19,8 @@ texrAreaContainer =
 
 
 textArea : List (Html.Attribute msg)
-textArea = 
-    cssStyle 
+textArea =
+    cssStyle
         """
         width: 100%;
         height: 100vh;
@@ -29,7 +29,7 @@ textArea =
 
 diagramContainer : List (Html.Attribute msg)
 diagramContainer =
-    cssStyle 
+    cssStyle
         """
         width: 50%;
         padding: 10px;

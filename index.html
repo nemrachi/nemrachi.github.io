@@ -5219,10 +5219,14 @@ var $author$project$Main$detectDiagramType = function (text) {
 			return $author$project$Main$Unknown;
 	}
 };
+var $elm$core$Debug$log = _Debug_log;
+var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		var newText = msg.a;
 		var diagramType = $author$project$Main$detectDiagramType(newText);
+		var _v1 = $elm$core$Debug$log(
+			$elm$core$Debug$toString(diagramType));
 		return _Utils_update(
 			model,
 			{diagramType: diagramType, userText: newText});
@@ -5251,7 +5255,7 @@ var $elm$core$List$filterMap = F2(
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$core$String$trim = _String_trim;
-var $author$project$CssParser$parseAndStyle = function (styleDef) {
+var $author$project$Css$Parser$parseAndStyle = function (styleDef) {
 	var _v0 = A2($elm$core$String$split, ':', styleDef);
 	if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
 		var key = _v0.a;
@@ -5266,15 +5270,15 @@ var $author$project$CssParser$parseAndStyle = function (styleDef) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$CssParser$cssStyle = function (css) {
+var $author$project$Css$Parser$cssStyle = function (css) {
 	return A2(
 		$elm$core$List$filterMap,
-		$author$project$CssParser$parseAndStyle,
+		$author$project$Css$Parser$parseAndStyle,
 		A2($elm$core$String$split, ';', css));
 };
-var $author$project$CssClass$diagramContainer = $author$project$CssParser$cssStyle('\n        width: 50%;\n        padding: 10px;\n        border-left: 1px solid #ccc;\n        ');
+var $author$project$Css$Class$diagramContainer = $author$project$Css$Parser$cssStyle('\n        width: 50%;\n        padding: 10px;\n        border-left: 1px solid #ccc;\n        ');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$CssClass$flexContainer = $author$project$CssParser$cssStyle('display: flex;');
+var $author$project$Css$Class$flexContainer = $author$project$Css$Parser$cssStyle('display: flex;');
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -5318,6 +5322,13 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $author$project$Diagram$Flowchart$parseFlowchart = function (input) {
 	return A2($elm$core$String$startsWith, 'flowchart', input) ? $elm$core$Maybe$Just(
 		{
@@ -5334,21 +5345,606 @@ var $author$project$Diagram$Flowchart$parseFlowchart = function (input) {
 				])
 		}) : $elm$core$Maybe$Nothing;
 };
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $author$project$Diagram$StateDiagram$emptyGraph = $elm$core$Dict$empty;
+var $author$project$Diagram$StateDiagram$defaultPosition = {x: 0, y: 0};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $author$project$Diagram$StateDiagram$getChildNode = function (edge) {
+	return {edgeLabel: edge.label, level: -1, name: edge.to, position: $author$project$Diagram$StateDiagram$defaultPosition, visited: false};
+};
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var $elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var lLeft = _v1.d;
+			var lRight = _v1.e;
+			var _v2 = dict.e;
+			var rClr = _v2.a;
+			var rK = _v2.b;
+			var rV = _v2.c;
+			var rLeft = _v2.d;
+			var _v3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _v2.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v4 = dict.d;
+			var lClr = _v4.a;
+			var lK = _v4.b;
+			var lV = _v4.c;
+			var lLeft = _v4.d;
+			var lRight = _v4.e;
+			var _v5 = dict.e;
+			var rClr = _v5.a;
+			var rK = _v5.b;
+			var rV = _v5.c;
+			var rLeft = _v5.d;
+			var rRight = _v5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var _v2 = _v1.d;
+			var _v3 = _v2.a;
+			var llK = _v2.b;
+			var llV = _v2.c;
+			var llLeft = _v2.d;
+			var llRight = _v2.e;
+			var lRight = _v1.e;
+			var _v4 = dict.e;
+			var rClr = _v4.a;
+			var rK = _v4.b;
+			var rV = _v4.c;
+			var rLeft = _v4.d;
+			var rRight = _v4.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				lK,
+				lV,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v5 = dict.d;
+			var lClr = _v5.a;
+			var lK = _v5.b;
+			var lV = _v5.c;
+			var lLeft = _v5.d;
+			var lRight = _v5.e;
+			var _v6 = dict.e;
+			var rClr = _v6.a;
+			var rK = _v6.b;
+			var rV = _v6.c;
+			var rLeft = _v6.d;
+			var rRight = _v6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _v1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_v2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _v3 = right.a;
+							var _v4 = right.d;
+							var _v5 = _v4.a;
+							return $elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _v2$2;
+						}
+					} else {
+						var _v6 = right.a;
+						var _v7 = right.d;
+						return $elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _v2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var $elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _v3 = lLeft.a;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					$elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _v4 = $elm$core$Dict$moveRedLeft(dict);
+				if (_v4.$ === 'RBNode_elm_builtin') {
+					var nColor = _v4.a;
+					var nKey = _v4.b;
+					var nValue = _v4.c;
+					var nLeft = _v4.d;
+					var nRight = _v4.e;
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						$elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				$elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return $elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var $elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _v4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _v6 = lLeft.a;
+						return A5(
+							$elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2($elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _v7 = $elm$core$Dict$moveRedLeft(dict);
+						if (_v7.$ === 'RBNode_elm_builtin') {
+							var nColor = _v7.a;
+							var nKey = _v7.b;
+							var nValue = _v7.c;
+							var nLeft = _v7.d;
+							var nRight = _v7.e;
+							return A5(
+								$elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return $elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						$elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2($elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					$elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var $elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _v1 = $elm$core$Dict$getMin(right);
+				if (_v1.$ === 'RBNode_elm_builtin') {
+					var minKey = _v1.b;
+					var minValue = _v1.c;
+					return A5(
+						$elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						$elm$core$Dict$removeMin(right));
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					$elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2($elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var $elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$update = F3(
+	function (targetKey, alter, dictionary) {
+		var _v0 = alter(
+			A2($elm$core$Dict$get, targetKey, dictionary));
+		if (_v0.$ === 'Just') {
+			var value = _v0.a;
+			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
+		} else {
+			return A2($elm$core$Dict$remove, targetKey, dictionary);
+		}
+	});
+var $author$project$Diagram$StateDiagram$upsertGraph = F2(
+	function (edge, graph) {
+		var parentNodeName = edge.from;
+		var childNode = $author$project$Diagram$StateDiagram$getChildNode(edge);
+		return A3(
+			$elm$core$Dict$update,
+			parentNodeName,
+			function (maybeNodes) {
+				if (maybeNodes.$ === 'Just') {
+					var nodes = maybeNodes.a;
+					return $elm$core$Maybe$Just(
+						_Utils_ap(
+							nodes,
+							_List_fromArray(
+								[childNode])));
+				} else {
+					return $elm$core$Maybe$Just(
+						_List_fromArray(
+							[childNode]));
+				}
+			},
+			graph);
+	});
+var $author$project$Diagram$StateDiagram$getGraph = F2(
+	function (edges, graph) {
+		getGraph:
+		while (true) {
+			if (edges.b) {
+				var edge = edges.a;
+				var rest = edges.b;
+				var newGraph = A2($author$project$Diagram$StateDiagram$upsertGraph, edge, graph);
+				var $temp$edges = rest,
+					$temp$graph = newGraph;
+				edges = $temp$edges;
+				graph = $temp$graph;
+				continue getGraph;
+			} else {
+				return $author$project$Diagram$StateDiagram$emptyGraph;
+			}
+		}
+	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$Diagram$StateDiagram$getEdgeLabel = function (words) {
+	return $elm$core$List$isEmpty(words) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+		A2($elm$core$String$join, ' ', words));
+};
+var $elm$core$String$words = _String_words;
+var $author$project$Diagram$StateDiagram$parseLine = function (line) {
+	var _v0 = $elm$core$String$words(line);
+	if (((_v0.b && _v0.b.b) && (_v0.b.a === '-->')) && _v0.b.b.b) {
+		var from = _v0.a;
+		var _v1 = _v0.b;
+		var _v2 = _v1.b;
+		var to = _v2.a;
+		var label = _v2.b;
+		return $elm$core$Maybe$Just(
+			{
+				from: from,
+				label: $author$project$Diagram$StateDiagram$getEdgeLabel(label),
+				to: to
+			});
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Diagram$StateDiagram$parseStateDiagram = function (input) {
-	return A2($elm$core$String$startsWith, 'stateDiagram', input) ? $elm$core$Maybe$Just(
-		{
-			nodes: _List_fromArray(
-				[
-					{id: 'Still', x: 150, y: 100},
-					{id: 'Moving', x: 300, y: 100},
-					{id: 'Crash', x: 450, y: 100}
-				]),
-			transitions: _List_fromArray(
-				[
-					{from: 'Still', to: 'Moving'},
-					{from: 'Moving', to: 'Crash'}
-				])
-		}) : $elm$core$Maybe$Nothing;
+	var lines = $elm$core$String$lines(input);
+	var edges = A2($elm$core$List$filterMap, $author$project$Diagram$StateDiagram$parseLine, lines);
+	var _v0 = $elm$core$Debug$log(
+		$elm$core$Debug$toString(edges));
+	return A2($author$project$Diagram$StateDiagram$getGraph, edges, $author$project$Diagram$StateDiagram$emptyGraph);
 };
 var $elm$core$List$append = F2(
 	function (xs, ys) {
@@ -5503,131 +6099,59 @@ var $author$project$Diagram$Flowchart$renderFlowchart = function (data) {
 					data.transitions)
 				])));
 };
-var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
-var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
-var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $author$project$Diagram$StateDiagram$renderNode = function (node) {
-	return A2(
-		$elm$svg$Svg$g,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				$elm$svg$Svg$circle,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$cx(
-						$elm$core$String$fromFloat(node.x)),
-						$elm$svg$Svg$Attributes$cy(
-						$elm$core$String$fromFloat(node.y)),
-						$elm$svg$Svg$Attributes$r('30'),
-						$elm$svg$Svg$Attributes$fill('lightblue')
-					]),
-				_List_Nil),
-				A2(
-				$elm$svg$Svg$text_,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$x(
-						$elm$core$String$fromFloat(node.x)),
-						$elm$svg$Svg$Attributes$y(
-						$elm$core$String$fromFloat(node.y)),
-						$elm$svg$Svg$Attributes$textAnchor('middle'),
-						$elm$svg$Svg$Attributes$dy('.3em')
-					]),
-				_List_fromArray(
-					[
-						$elm$svg$Svg$text(node.id)
-					]))
-			]));
-};
-var $author$project$Diagram$StateDiagram$renderTransition = F2(
-	function (nodes, transition) {
-		var toNode = $elm$core$List$head(
-			A2(
-				$elm$core$List$filter,
-				function (n) {
-					return _Utils_eq(n.id, transition.to);
-				},
-				nodes));
-		var fromNode = $elm$core$List$head(
-			A2(
-				$elm$core$List$filter,
-				function (n) {
-					return _Utils_eq(n.id, transition.from);
-				},
-				nodes));
-		var _v0 = _Utils_Tuple2(fromNode, toNode);
-		if ((_v0.a.$ === 'Just') && (_v0.b.$ === 'Just')) {
-			var from = _v0.a.a;
-			var to = _v0.b.a;
-			return A2(
-				$elm$svg$Svg$line,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$x1(
-						$elm$core$String$fromFloat(from.x + 30)),
-						$elm$svg$Svg$Attributes$y1(
-						$elm$core$String$fromFloat(from.y)),
-						$elm$svg$Svg$Attributes$x2(
-						$elm$core$String$fromFloat(to.x - 30)),
-						$elm$svg$Svg$Attributes$y2(
-						$elm$core$String$fromFloat(to.y)),
-						$elm$svg$Svg$Attributes$stroke('black'),
-						$elm$svg$Svg$Attributes$strokeWidth('2')
-					]),
-				_List_Nil);
-		} else {
-			return A2(
-				$elm$svg$Svg$text_,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$text('Error: Invalid transition')
-					]));
-		}
-	});
-var $author$project$Diagram$StateDiagram$renderStateDiagram = function (data) {
-	return A2(
-		$elm$svg$Svg$svg,
-		_List_fromArray(
-			[
-				$elm$svg$Svg$Attributes$width('500'),
-				$elm$svg$Svg$Attributes$height('300')
-			]),
-		$elm$core$List$concat(
+var $elm$html$Html$li = _VirtualDom_node('li');
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $author$project$Diagram$StateDiagram$renderStateDiagram = function (graph) {
+	var renderNode = function (node) {
+		return A2(
+			$elm$html$Html$li,
+			_List_Nil,
 			_List_fromArray(
 				[
-					A2($elm$core$List$map, $author$project$Diagram$StateDiagram$renderNode, data.nodes),
+					$elm$html$Html$text(
+					'Node label: ' + (node.name + (', Position: (' + ($elm$core$String$fromInt(node.position.x) + (', ' + ($elm$core$String$fromInt(node.position.y) + ')'))))))
+				]));
+	};
+	var renderKeyValue = function (_v0) {
+		var key = _v0.a;
+		var nodes = _v0.b;
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Key: ' + key),
 					A2(
-					$elm$core$List$map,
-					$author$project$Diagram$StateDiagram$renderTransition(data.nodes),
-					data.transitions)
-				])));
+					$elm$html$Html$ul,
+					_List_Nil,
+					A2($elm$core$List$map, renderNode, nodes))
+				]));
+	};
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		A2(
+			$elm$core$List$map,
+			renderKeyValue,
+			$elm$core$Dict$toList(graph)));
 };
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Main$renderDiagram = function (model) {
 	var _v0 = model.diagramType;
 	switch (_v0.$) {
 		case 'StateDiagram':
-			var _v1 = $author$project$Diagram$StateDiagram$parseStateDiagram(model.userText);
+			var graph = $author$project$Diagram$StateDiagram$parseStateDiagram(model.userText);
+			return $elm$core$Dict$isEmpty(graph) ? A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Invalid state diagram syntax')
+					])) : $author$project$Diagram$StateDiagram$renderStateDiagram(graph);
+		case 'Flowchart':
+			var _v1 = $author$project$Diagram$Flowchart$parseFlowchart(model.userText);
 			if (_v1.$ === 'Just') {
 				var parsedData = _v1.a;
-				return $author$project$Diagram$StateDiagram$renderStateDiagram(parsedData);
-			} else {
-				return A2(
-					$elm$html$Html$div,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text('Invalid state diagram syntax')
-						]));
-			}
-		case 'Flowchart':
-			var _v2 = $author$project$Diagram$Flowchart$parseFlowchart(model.userText);
-			if (_v2.$ === 'Just') {
-				var parsedData = _v2.a;
 				return $author$project$Diagram$Flowchart$renderFlowchart(parsedData);
 			} else {
 				return A2(
@@ -5642,19 +6166,19 @@ var $author$project$Main$renderDiagram = function (model) {
 			return A2($elm$html$Html$div, _List_Nil, _List_Nil);
 	}
 };
-var $author$project$CssClass$texrAreaContainer = $author$project$CssParser$cssStyle('\n        width: 50%;\n        padding: 10px;\n        ');
-var $author$project$CssClass$textArea = $author$project$CssParser$cssStyle('\n        width: 100%;\n        height: 100vh;\n        ');
+var $author$project$Css$Class$texrAreaContainer = $author$project$Css$Parser$cssStyle('\n        width: 50%;\n        padding: 10px;\n        ');
+var $author$project$Css$Class$textArea = $author$project$Css$Parser$cssStyle('\n        width: 100%;\n        height: 100vh;\n        ');
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
-		$author$project$CssClass$flexContainer,
+		$author$project$Css$Class$flexContainer,
 		_List_fromArray(
 			[
 				A2(
 				$elm$html$Html$div,
-				$author$project$CssClass$texrAreaContainer,
+				$author$project$Css$Class$texrAreaContainer,
 				_List_fromArray(
 					[
 						A2(
@@ -5666,12 +6190,12 @@ var $author$project$Main$view = function (model) {
 									$elm$html$Html$Attributes$value(model.userText),
 									$elm$html$Html$Events$onInput($author$project$Main$TextChange)
 								]),
-							$author$project$CssClass$textArea),
+							$author$project$Css$Class$textArea),
 						_List_Nil)
 					])),
 				A2(
 				$elm$html$Html$div,
-				$author$project$CssClass$diagramContainer,
+				$author$project$Css$Class$diagramContainer,
 				_List_fromArray(
 					[
 						$author$project$Main$renderDiagram(model)
