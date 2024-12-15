@@ -1,4 +1,4 @@
-module CssParser exposing (cssStyle)
+module Css.Parser exposing (cssStyle)
 
 import Html
 import Html.Attributes exposing (style)
@@ -14,7 +14,8 @@ cssStyle css =
 parseAndStyle : String -> Maybe (Html.Attribute msg)
 parseAndStyle styleDef =
     case String.split ":" styleDef of
-        [key, value] ->
+        [ key, value ] ->
             Just (style (String.trim key) (String.trim value))
+
         _ ->
             Nothing

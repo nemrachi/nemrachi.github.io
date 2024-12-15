@@ -1,13 +1,14 @@
 module Main exposing (main)
 
 import Browser
-import CssClass
+import Css.Class
 import Diagram.Flowchart exposing (parseFlowchart, renderFlowchart)
 import Diagram.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
 import Html exposing (Html, div, textarea)
-import Html.Attributes exposing (value, placeholder)
+import Html.Attributes exposing (placeholder, value)
 import Html.Events exposing (onInput)
 import List exposing (..)
+import Dict exposing (..)
 
 
 -- MODEL
@@ -21,6 +22,7 @@ type DiagramType
     = StateDiagram
     | Flowchart
     | Unknown
+
 
 initialModel : Model
 initialModel =
@@ -42,72 +44,80 @@ update msg model =
     case msg of
         TextChange newText ->
             let
-                diagramType = detectDiagramType newText
+                diagramType =
+                    detectDiagramType newText
             in
-                { model | diagramType = diagramType, userText = newText }
+            { model | diagramType = diagramType, userText = newText }
 
 
 -- VIEW
 
 view : Model -> Html Msg
 view model =
-    div CssClass.flexContainer
-        [ div CssClass.texrAreaContainer
-            [ textarea 
+    div Css.Class.flexContainer
+        [ div Css.Class.texrAreaContainer
+            [ textarea
                 ([ placeholder "Enter code to generate diagram..."
                  , value model.userText
                  , onInput TextChange
                  ]
-                 ++ CssClass.textArea
+                 ++ Css.Class.textArea
                 )
                 []
             ]
-        , div CssClass.diagramContainer
+        , div Css.Class.diagramContainer
             [ renderDiagram model ]
         ]
 
 
--- OTHER FUNCTIONS
+-- HELPER FUNCTIONS
+
+renderDiagram : Model -> Html msg
+renderDiagram model =
+    let
+        diagramLines = List.tail (String.lines model.userText) |> Maybe.withDefault []
+    in
+        case model.diagramType of
+            StateDiagram ->
+                let
+                    (graph, positions) = parseStateDiagram diagramLines
+                in
+                    if Dict.isEmpty graph then
+                        div [] [ Html.text "Invalid state diagram syntax" ]
+                    else
+                        renderStateDiagram graph positions
+
+            Flowchart ->
+                case parseFlowchart model.userText of
+                    Just parsedData ->
+                        renderFlowchart parsedData
+
+                    Nothing ->
+                        div [] [ Html.text "Invalid flowchart syntax" ]
+
+            Unknown ->
+                div [] []
 
 detectDiagramType : String -> DiagramType
 detectDiagramType text =
-    case (getFirstLine text) of
+    case getFirstLine text of
         "stateDiagram" ->
             StateDiagram
+
         "flowchart" ->
             Flowchart
+
         _ ->
             Unknown
-
 
 getFirstLine : String -> String
 getFirstLine text =
     case String.lines text of
         first :: _ ->
             first
+
         _ ->
             ""
-
-
-renderDiagram : Model -> Html msg
-renderDiagram model =
-    case model.diagramType of
-        StateDiagram ->
-            case parseStateDiagram model.userText of
-                Just parsedData ->
-                    renderStateDiagram parsedData
-                Nothing ->
-                    div [] [ Html.text "Invalid state diagram syntax" ]
-
-        Flowchart ->
-            case parseFlowchart model.userText of
-                Just parsedData ->
-                    renderFlowchart parsedData
-                Nothing ->
-                    div [] [ Html.text "Invalid flowchart syntax" ]
-
-        Unknown ->
-            div [] []
 
 
 -- MAIN

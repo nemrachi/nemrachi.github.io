@@ -3,19 +3,26 @@ module Diagram.Flowchart exposing (parseFlowchart, renderFlowchart)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
+
 type alias Node =
     { id : String
     , label : String
     , x : Float
-    , y : Float }
+    , y : Float
+    }
+
 
 type alias Transition =
     { from : String
-    , to : String }
+    , to : String
+    }
+
 
 type alias DiagramData =
     { nodes : List Node
-    , transitions : List Transition }
+    , transitions : List Transition
+    }
+
 
 parseFlowchart : String -> Maybe DiagramData
 parseFlowchart input =
@@ -31,6 +38,7 @@ parseFlowchart input =
                 , { from = "B", to = "C" }
                 ]
             }
+
     else
         Nothing
 
@@ -56,11 +64,15 @@ renderNode node =
 renderTransition : List Node -> Transition -> Svg msg
 renderTransition nodes transition =
     let
-        fromNode = List.head (List.filter (\n -> n.id == transition.from) nodes)
-        toNode = List.head (List.filter (\n -> n.id == transition.to) nodes)
+        fromNode =
+            List.head (List.filter (\n -> n.id == transition.from) nodes)
+
+        toNode =
+            List.head (List.filter (\n -> n.id == transition.to) nodes)
     in
-    case (fromNode, toNode) of
-        (Just from, Just to) ->
+    case ( fromNode, toNode ) of
+        ( Just from, Just to ) ->
             line [ x1 (String.fromFloat (from.x + 100)), y1 (String.fromFloat (from.y + 25)), x2 (String.fromFloat to.x), y2 (String.fromFloat (to.y + 25)), stroke "black", strokeWidth "2" ] []
+
         _ ->
             text_ [] [ text "Error: Invalid transition" ]
