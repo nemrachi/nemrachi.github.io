@@ -142,9 +142,7 @@ assignChildPositions children parentPosition visited =
         processChild (index, (currentVisited, accPositions)) node =
             let
                 candidatePosition = calculateNodePosition node.name parentPosition (toFloat (index - halfCount)) currentVisited
-                _ = Debug.log ("__candidatePosition " ++ node.name) (candidatePosition)
                 uniquePosition = ensureUniquePosition candidatePosition currentVisited
-                _ = Debug.log ("__uniquePosition " ++ node.name) (uniquePosition)
                 updatedVisited = Dict.insert node.name uniquePosition currentVisited
                 updatedPositions = Dict.insert node.name uniquePosition accPositions
             in
