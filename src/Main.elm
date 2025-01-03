@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Css.Class
-import Diagram.Flowchart exposing (parseFlowchart, renderFlowchart)
+import Diagram.UseCaseDiagram exposing (..)
 import Diagram.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
 import Html exposing (Html, div, textarea)
 import Html.Attributes exposing (placeholder, value)
@@ -18,11 +18,14 @@ type alias Model =
     , userText : String
     }
 
+-- TODO https://sporto.github.io/elm-patterns/basic/impossible-states.html
+
 type DiagramType
     = StateDiagram
-    | Flowchart
+    | UseCaseDiagram
     | Unknown
 
+-- TODO stateless components https://dev.to/dwayne/stateless-and-stateful-components-no-reusable-views-in-elm-2kg0
 
 initialModel : Model
 initialModel =
@@ -49,6 +52,7 @@ update msg model =
             in
             { model | diagramType = diagramType, userText = newText }
 
+-- TODO for the future https://sporto.github.io/elm-patterns/basic/builder-pattern.html
 
 -- VIEW
 
@@ -87,13 +91,8 @@ renderDiagram model =
                     else
                         renderStateDiagram graph positions
 
-            Flowchart ->
-                case parseFlowchart model.userText of
-                    Just parsedData ->
-                        renderFlowchart parsedData
-
-                    Nothing ->
-                        div [] [ Html.text "Invalid flowchart syntax" ]
+            UseCaseDiagram ->
+                div [] [ Html.text "Use case diagram" ]
 
             Unknown ->
                 div [] []
@@ -104,8 +103,8 @@ detectDiagramType text =
         "stateDiagram" ->
             StateDiagram
 
-        "flowchart" ->
-            Flowchart
+        "useCaseDiagram" ->
+            UseCaseDiagram
 
         _ ->
             Unknown

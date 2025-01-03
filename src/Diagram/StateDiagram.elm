@@ -6,8 +6,16 @@ import Dict exposing (Dict)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
+-- TODO
+-- Observer - MVU
+-- Factory - creating objects without exposing the instantiation logic (positionZero...)
+-- Builder - construct complex objects step-by-step
+-- Strategy - Funkcia spusti funkciu A alebo B podla niecoho
+-- Composite - treat individual objects and compositions of objects uniformly (??)
 
 -- TYPES
+
+-- TODO https://sporto.github.io/elm-patterns/basic/parse-dont-validate.html
 
 type alias Edge =
     { from : String
@@ -19,6 +27,12 @@ type alias Node =
     { name : String
     , edgeLabel : Maybe String
     }
+
+-- TODO type blindness String could be Parent or Child -> define Parent String and Parent Child
+-- https://sporto.github.io/elm-patterns/basic/wrap-early.html
+
+-- TODO maybe phantom type (more of not)
+-- https://sporto.github.io/elm-patterns/advanced/phantom-types.html
 
 type alias Graph =
     Dict String (List Node)
@@ -43,14 +57,14 @@ positionOne = { x = 0, y = const_XY_OFFSET }
 
 -- PARSING
 
+-- TODO https://sporto.github.io/elm-patterns/advanced/railway.html
 parseStateDiagram : List String -> (Graph, NodePositions)
 parseStateDiagram diagramLines =
-    let
-        edges = List.filterMap parseLine diagramLines
-        graph = buildGraph edges
-        positions = calculatePositions graph const_START positionZero Dict.empty
-    in
-        (graph, positions)
+    diagramLines
+        |> List.filterMap parseLine -- TODO https://sporto.github.io/elm-patterns/basic/unwrap-maybe-early.html
+        |> buildGraph
+        |> \graph -> (graph, calculatePositions graph const_START positionZero Dict.empty)
+
 
 
 -- GET EDGES
@@ -65,7 +79,7 @@ parseLine line =
                 , label = parseEdgeLabel label 
                 }
         _ ->
-            Nothing
+            Nothing -- TODO show error (Result, Error implementation)
 
 parsePoint : String -> String -> String
 parsePoint point const =
@@ -104,7 +118,7 @@ addEdgeToGraph edge graph =
 -- GET POSITIONS
 
 calculatePositions : Graph -> String -> Position -> NodePositions -> NodePositions
-calculatePositions graph parent position visited =                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+calculatePositions graph parent position visited =
     let
         (visitedParent, parentPosition) = 
             case Dict.get parent visited of
@@ -182,22 +196,14 @@ ensureUniquePosition position visited =
 
 -- RENDERING
 
+-- TODO https://sporto.github.io/elm-patterns/basic/conditional-rendering.html
+
+-- TODO maybe https://sporto.github.io/elm-patterns/architecture/reusable-views.html
+
 renderStateDiagram : Graph -> NodePositions -> Svg msg
 renderStateDiagram graph positions =
     let
-        (minPos, maxPos) = calculateMinMax positions
-        padding = 50
-        minX = minPos.x - padding
-        minY = minPos.y - padding
-        maxX = maxPos.x + padding
-        maxY = maxPos.y + padding
-
-        vb = String.join " "
-            [ String.fromFloat minX
-            , String.fromFloat minY
-            , String.fromFloat (maxX - minX)
-            , String.fromFloat (maxY - minY)
-            ]
+        vb = calculateViewBoxSize positions
     in
     svg [ viewBox vb
         , preserveAspectRatio "xMidYMid meet"
@@ -210,6 +216,23 @@ renderStateDiagram graph positions =
                 ) (Dict.toList graph)
             ++ List.concatMap (\(node, position) -> renderNode node position) (Dict.toList positions)
         )
+
+calculateViewBoxSize : NodePositions -> String
+calculateViewBoxSize positions =
+    let
+        (minPos, maxPos) = calculateMinMax positions
+        padding = 50
+        minX = minPos.x - padding
+        minY = minPos.y - padding
+        maxX = maxPos.x + padding
+        maxY = maxPos.y + padding
+    in
+        String.join " "
+            [ String.fromFloat minX
+            , String.fromFloat minY
+            , String.fromFloat (maxX - minX)
+            , String.fromFloat (maxY - minY)
+            ]
 
 calculateMinMax : NodePositions -> (Position, Position)
 calculateMinMax positions =
@@ -248,6 +271,8 @@ calculateArrowPoints parent child =
         ( { x = parent.x + offsetX, y = parent.y + offsetY }
         , { x = child.x - offsetX, y = child.y - offsetY }
         )
+
+-- TODO https://sporto.github.io/elm-patterns/basic/arguments-list.html
 
 renderNode : String -> Position -> List (Svg msg)
 renderNode node position =
