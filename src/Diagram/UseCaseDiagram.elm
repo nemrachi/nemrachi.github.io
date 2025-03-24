@@ -1,6 +1,8 @@
-module Diagram.UseCaseDiagram exposing (..)
+module Diagram.UseCaseDiagram exposing (renderUseCaseDiagram)
 
-import Html
+import Html exposing (Html, div)
 
-main =
-      Html.text "TODO"
+
+renderUseCaseDiagram : Html msg
+renderUseCaseDiagram =
+    div [] [ Html.text "Use case diagram" ]

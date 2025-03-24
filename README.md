@@ -1,3 +1,16 @@
+# How to run
+
+- `elm reactor` ⟶ exposes [localhost:8000](http://localhost:8000)
+- `elm make src/Main.elm --output app.js`
+
+# Formatting
+
+`elm-format .`
+
+# Drag TODO
+
+Triggerovat messages a vypisovat (napr. `Debug.log`) poziciu mysky a jej stlacenie/pustenie.
+
 # DP3 TODO
 
 1. porovnanie implementovaných vzorov z:

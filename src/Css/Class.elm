@@ -1,4 +1,4 @@
-module Css.Class exposing (..)
+module Css.Class exposing (diagramContainer, flexContainer, texrAreaContainer, textArea)
 
 import Css.Parser exposing (cssStyle)
 import Html

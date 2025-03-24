@@ -1,21 +1,42 @@
-module Helper.Constant exposing (..)
+module Common.Constant exposing (..)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
+
+
 -- reader monad for future possible inspiration https://gist.github.com/jliuhtonen/189facfd3841e0c1888b58caf4bfb9aa
 
-const_START : String 
-const_START = "⒮"
+
+const_START : String
+const_START =
+    "⒮"
+
 
 const_END : String
-const_END = "⒠"
+const_END =
+    "⒠"
+
+
+const_VIEWBOX_PADDING : Float
+const_VIEWBOX_PADDING =
+    50.0
+
 
 const_XY_OFFSET : Float
-const_XY_OFFSET = 150
+const_XY_OFFSET =
+    150
+
 
 const_NODE_RADIUS : Float
-const_NODE_RADIUS = 30
+const_NODE_RADIUS =
+    30
+
+
+const_NODE_RADIUS_STR : String
+const_NODE_RADIUS_STR =
+    String.fromFloat const_NODE_RADIUS
+
 
 const_SVG_ARROW : List (Svg msg)
 const_SVG_ARROW =
@@ -30,13 +51,14 @@ const_SVG_ARROW =
             , markerUnits "strokeWidth"
             ]
             [ Svg.path
-                [ d "M0,0 L0,7 L10,3.5 Z" -- Arrow pat
+                [ d "M0,0 L0,7 L10,3.5 Z" -- arrow pat
                 , fill "black"
                 ]
                 []
             ]
         ]
     ]
+
 
 const_SVG_CIRCLE : List (Svg msg)
 const_SVG_CIRCLE =
@@ -60,4 +82,3 @@ const_SVG_CIRCLE =
             ]
         ]
     ]
-
