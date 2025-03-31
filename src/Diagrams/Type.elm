@@ -1,9 +1,10 @@
-module Diagram.Type exposing (Diagram, Edge, Node, NodeId)
+module Diagrams.Type exposing (Diagram, Edge, Node, NodeId)
 
 import Dict exposing (Dict)
 
 
 
+-- TYPES
 -- TODO https://sporto.github.io/elm-patterns/basic/parse-dont-validate.html
 
 

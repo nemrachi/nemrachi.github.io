@@ -1,20 +1,18 @@
 module Main exposing (main)
 
 import Browser
-import Browser.Events
-import Common.Drag exposing (Drag, applyDragToPosition)
-import Common.Mouse exposing (positionDecoder)
-import Common.Msg exposing (Msg(..))
-import Common.Position exposing (NodePositions)
+import Commons.Drag exposing (Drag, applyDragToPosition)
+import Commons.Mouse exposing (onMouseMove, onMouseUp)
+import Commons.Msg exposing (Msg(..))
+import Commons.Position exposing (NodePositions)
 import Css.Class
-import Diagram.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
-import Diagram.Type exposing (Diagram)
-import Diagram.UseCaseDiagram exposing (renderUseCaseDiagram)
+import Diagrams.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
+import Diagrams.Type exposing (Diagram)
+import Diagrams.UseCaseDiagram exposing (renderUseCaseDiagram)
 import Dict
 import Html exposing (Html, div, textarea)
 import Html.Attributes exposing (placeholder, value)
 import Html.Events exposing (onInput)
-import Json.Decode as D
 import List
 
 
@@ -72,7 +70,7 @@ update msg model =
                 ( newDiagram, newPositions ) =
                     case detectDiagramType text of
                         StateDiagram ->
-                            parseStateDiagram diagramLines
+                            parseStateDiagram diagramLines model.nodePositions
 
                         _ ->
                             ( Dict.empty, Dict.empty )
@@ -87,37 +85,27 @@ update msg model =
             )
 
         DragStart nodeId pos ->
-            Debug.log "DragStart" model.nodePositions
-                |> (\_ ->
-                        ( { model | drag = Just (Drag pos pos nodeId) }
-                        , Cmd.none
-                        )
-                   )
+            ( { model | drag = Just (Drag pos pos nodeId) }
+            , Cmd.none
+            )
 
         DragAt pos ->
-            Debug.log "DragAt" pos
-                |> (\_ ->
-                        ( { model | drag = Maybe.map (\d -> { d | start = pos }) model.drag }
-                        , Cmd.none
-                        )
-                   )
+            ( { model | drag = Maybe.map (\d -> { d | start = pos }) model.drag }
+            , Cmd.none
+            )
 
         DragEnd ->
-            Debug.log "DragEnd" model.nodePositions
-                |> (\_ ->
-                        case model.drag of
-                            Just d ->
-                                ( { model
-                                    | nodePositions = applyDragToPosition model.drag model.nodePositions
-                                    , drag = Nothing
-                                  }
-                                , Cmd.none
-                                )
+            case model.drag of
+                Just _ ->
+                    ( { model
+                        | nodePositions = applyDragToPosition model.drag model.nodePositions
+                        , drag = Nothing
+                      }
+                    , Cmd.none
+                    )
 
-                            Nothing ->
-                                -- fallback in case DragEnd arrives unexpectedly
-                                ( model, Cmd.none )
-                   )
+                Nothing ->
+                    ( model, Cmd.none )
 
 
 
@@ -145,6 +133,7 @@ view model =
 
 
 -- HELPER FUNCTIONS
+-- vo funkcionalnom pristupe by bolo komplikovane implementovat antivzor
 
 
 renderDiagram : Model -> Html Msg
@@ -198,10 +187,7 @@ subscriptions model =
             Sub.none
 
         Just _ ->
-            Sub.batch
-                [ Browser.Events.onMouseMove (D.map DragAt positionDecoder)
-                , Browser.Events.onMouseUp (D.succeed DragEnd)
-                ]
+            Sub.batch [ onMouseMove, onMouseUp ]
 
 
 

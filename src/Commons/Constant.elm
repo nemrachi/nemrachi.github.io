@@ -1,4 +1,4 @@
-module Common.Constant exposing (..)
+module Commons.Constant exposing (..)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -20,7 +20,7 @@ const_END =
 
 const_VIEWBOX_PADDING : Float
 const_VIEWBOX_PADDING =
-    50.0
+    70
 
 
 const_XY_OFFSET : Float
@@ -33,9 +33,9 @@ const_NODE_RADIUS =
     30
 
 
-const_NODE_RADIUS_STR : String
-const_NODE_RADIUS_STR =
-    String.fromFloat const_NODE_RADIUS
+const_START_END_NODE_RADIUS : Float
+const_START_END_NODE_RADIUS =
+    const_NODE_RADIUS / 2
 
 
 const_SVG_ARROW : List (Svg msg)

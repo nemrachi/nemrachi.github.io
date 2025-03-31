@@ -1,11 +1,11 @@
-module Diagram.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
+module Diagrams.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
 
-import Common.Constant exposing (const_END, const_NODE_RADIUS_STR, const_START, const_SVG_ARROW)
-import Common.Graphics exposing (calculateArrowPoints, calculateViewBoxSize)
-import Common.Mouse exposing (onMouseDown)
-import Common.Msg exposing (Msg(..))
-import Common.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ONE, const_POSITION_ZERO, getNodePosition)
-import Diagram.Type exposing (Diagram, Edge, Node, NodeId)
+import Commons.Constant exposing (const_END, const_NODE_RADIUS, const_START, const_START_END_NODE_RADIUS, const_SVG_ARROW)
+import Commons.Graphics exposing (calculateArrowPoints, calculateViewBoxSize)
+import Commons.Msg exposing (Msg(..))
+import Commons.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ONE, const_POSITION_ZERO, getNodePosition)
+import Commons.TextParser exposing (parseEdgeLabel, parsePoint)
+import Diagrams.Type exposing (Diagram, Edge, Node, NodeId)
 import Dict
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -22,13 +22,14 @@ import Svg.Attributes exposing (..)
 -- TODO https://sporto.github.io/elm-patterns/advanced/railway.html
 
 
-parseStateDiagram : List String -> ( Diagram, NodePositions )
-parseStateDiagram diagramLines =
+parseStateDiagram : List String -> NodePositions -> ( Diagram, NodePositions )
+parseStateDiagram diagramLines nodePositions =
     diagramLines
         |> List.filterMap parseLine
         -- TODO https://sporto.github.io/elm-patterns/basic/unwrap-maybe-early.html
         |> buildDiagram
         |> (\diagram -> ( diagram, calculatePositions const_START const_POSITION_ZERO diagram Dict.empty ))
+        |> (\( diagram, generatedPositions ) -> ( diagram, updateNodePositions nodePositions generatedPositions ))
 
 
 
@@ -44,30 +45,6 @@ parseLine line =
                 , to = parsePoint to const_END
                 , label = parseEdgeLabel label
                 }
-
-        _ ->
-            Nothing
-
-
-
--- TODO show error (Result, Error implementation)
-
-
-parsePoint : String -> String -> NodeId
-parsePoint point const =
-    case point of
-        "[*]" ->
-            const
-
-        _ ->
-            point
-
-
-parseEdgeLabel : List String -> Maybe String
-parseEdgeLabel words =
-    case words of
-        ":" :: rest ->
-            Just (String.join " " rest)
 
         _ ->
             Nothing
@@ -99,6 +76,24 @@ addEdgeToDiagram edge diagram =
 
 
 
+-- UPDATE NODE POSITIONS
+
+
+updateNodePositions : NodePositions -> NodePositions -> NodePositions
+updateNodePositions oldPositions newPositions =
+    Dict.merge
+        -- if only in oldPositions, skip
+        (\_ _ acc -> acc)
+        -- if key is in both, use value from oldPositions
+        (\key oldPos _ acc -> Dict.insert key oldPos acc)
+        -- if only in newPositions, keep original value from newPositions
+        (\key newPos acc -> Dict.insert key newPos acc)
+        oldPositions
+        newPositions
+        Dict.empty
+
+
+
 -- RENDERING
 -- TODO https://sporto.github.io/elm-patterns/basic/conditional-rendering.html
 -- TODO maybe https://sporto.github.io/elm-patterns/architecture/reusable-views.html
@@ -127,16 +122,22 @@ renderStateDiagram diaram positions =
 
 
 renderTransition : NodeId -> NodePositions -> Node -> List (Svg msg)
-renderTransition parent positions child =
+renderTransition parentId positions child =
     let
         parentPosition =
-            getNodePosition parent positions
+            getNodePosition parentId positions
 
         childPosition =
             Dict.get child.name positions |> Maybe.withDefault const_POSITION_ONE
 
+        parentRadius =
+            getNodeRadius parentId
+
+        childRadius =
+            getNodeRadius child.name
+
         ( start, end ) =
-            calculateArrowPoints parentPosition childPosition
+            calculateArrowPoints parentPosition childPosition parentRadius childRadius
     in
     [ line
         [ x1 (String.fromFloat start.x)
@@ -151,28 +152,35 @@ renderTransition parent positions child =
     ]
 
 
+getNodeRadius : NodeId -> Float
+getNodeRadius nodeId =
+    case nodeId of
+        "⒮" ->
+            const_START_END_NODE_RADIUS
+
+        "⒠" ->
+            const_START_END_NODE_RADIUS
+
+        _ ->
+            const_NODE_RADIUS
+
+
 
 -- TODO https://sporto.github.io/elm-patterns/basic/arguments-list.html
 
 
 renderNode : NodeId -> Position -> List (Svg Msg)
 renderNode nodeId position =
-    let
-        posX =
-            String.fromFloat position.x
+    case nodeId of
+        "⒮" ->
+            [ Commons.Graphics.draggableCircle nodeId position const_START_END_NODE_RADIUS "black" ]
 
-        posY =
-            String.fromFloat position.y
-    in
-    [ circle
-        [ cx posX
-        , cy posY
-        , r const_NODE_RADIUS_STR
-        , fill "lightgreen"
-        , onMouseDown nodeId
-        ]
-        []
-    , text_
-        [ x posX, y posY, textAnchor "middle", dy ".3em" ]
-        [ Svg.text nodeId ]
-    ]
+        "⒠" ->
+            [ Commons.Graphics.draggableDoubleStrokedCircle nodeId position const_START_END_NODE_RADIUS "black" "white" ]
+
+        _ ->
+            [ Commons.Graphics.draggableCircle nodeId position const_NODE_RADIUS "lightgreen"
+            , text_
+                [ x (String.fromFloat position.x), y (String.fromFloat position.y), textAnchor "middle", dy ".3em" ]
+                [ Svg.text nodeId ]
+            ]

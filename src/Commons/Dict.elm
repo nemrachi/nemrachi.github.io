@@ -1,4 +1,4 @@
-module Common.Dict exposing (pop)
+module Commons.Dict exposing (pop)
 
 import Dict exposing (Dict)
 

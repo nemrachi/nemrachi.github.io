@@ -1,6 +1,10 @@
-module Diagram.UseCaseDiagram exposing (renderUseCaseDiagram)
+module Diagrams.UseCaseDiagram exposing (renderUseCaseDiagram)
 
 import Html exposing (Html, div)
+
+
+
+-- TODO simple use case diagram
 
 
 renderUseCaseDiagram : Html msg

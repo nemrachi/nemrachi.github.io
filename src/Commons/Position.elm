@@ -1,8 +1,8 @@
-module Common.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ONE, const_POSITION_ZERO, getNodePosition)
+module Commons.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ONE, const_POSITION_ZERO, getNodePosition)
 
-import Common.Constant exposing (const_XY_OFFSET)
-import Common.Dict exposing (pop)
-import Diagram.Type exposing (Diagram, Node, NodeId)
+import Commons.Constant exposing (const_XY_OFFSET)
+import Commons.Dict exposing (pop)
+import Diagrams.Type exposing (Diagram, Node, NodeId)
 import Dict exposing (Dict)
 
 
@@ -96,8 +96,8 @@ assignChildPositions parentPosition children visited =
     Dict.union visited finalPositions
 
 
-processChild : (Int, (NodePositions, NodePositions)) -> Int ->  Position -> Node -> (NodePositions, NodePositions)
-processChild (index, (currentVisited, newPositions)) halfCount parentPos childNode =
+processChild : ( Int, ( NodePositions, NodePositions ) ) -> Int -> Position -> Node -> ( NodePositions, NodePositions )
+processChild ( index, ( currentVisited, newPositions ) ) halfCount parentPos childNode =
     let
         offset =
             toFloat (index - halfCount)

@@ -1,7 +1,7 @@
-module Common.Drag exposing (Drag, applyDragToPosition)
+module Commons.Drag exposing (Drag, applyDragToPosition)
 
-import Common.Position exposing (NodePositions, Position)
-import Diagram.Type exposing (NodeId)
+import Commons.Position exposing (NodePositions, Position)
+import Diagrams.Type exposing (NodeId)
 import Dict
 
 
