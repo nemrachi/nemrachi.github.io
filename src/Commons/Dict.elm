@@ -1,4 +1,4 @@
-module Commons.Dict exposing (pop)
+module Commons.Dict exposing (getFirstKey, pop)
 
 import Dict exposing (Dict)
 
@@ -11,3 +11,8 @@ pop key dict =
 
         Nothing ->
             ( Nothing, dict )
+
+
+getFirstKey : Dict comparable v -> Maybe comparable
+getFirstKey dict =
+    List.head (Dict.keys dict)

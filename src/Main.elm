@@ -8,7 +8,7 @@ import Commons.Position exposing (NodePositions)
 import Css.Class
 import Diagrams.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
 import Diagrams.Type exposing (Diagram)
-import Diagrams.UseCaseDiagram exposing (renderUseCaseDiagram)
+import Diagrams.UseCaseDiagram exposing (parseUseCaseDiagram, renderUseCaseDiagram)
 import Dict
 import Html exposing (Html, div, textarea)
 import Html.Attributes exposing (placeholder, value)
@@ -71,6 +71,9 @@ update msg model =
                     case detectDiagramType text of
                         StateDiagram ->
                             parseStateDiagram diagramLines model.nodePositions
+
+                        UseCaseDiagram ->
+                            parseUseCaseDiagram diagramLines model.nodePositions
 
                         _ ->
                             ( Dict.empty, Dict.empty )
@@ -147,7 +150,11 @@ renderDiagram model =
                 renderStateDiagram model.diagram (applyDragToPosition model.drag model.nodePositions)
 
         UseCaseDiagram ->
-            renderUseCaseDiagram
+            if Dict.isEmpty model.diagram then
+                div [] [ Html.text "Invalid use case diagram syntax" ]
+
+            else
+                renderUseCaseDiagram model.diagram (applyDragToPosition model.drag model.nodePositions)
 
         Unknown ->
             div [] []

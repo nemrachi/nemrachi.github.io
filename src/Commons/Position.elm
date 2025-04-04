@@ -1,4 +1,4 @@
-module Commons.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ONE, const_POSITION_ZERO, getNodePosition)
+module Commons.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ONE, const_POSITION_ZERO, getNodePosition, stringifyXY)
 
 import Commons.Constant exposing (const_XY_OFFSET)
 import Commons.Dict exposing (pop)
@@ -24,6 +24,11 @@ const_POSITION_ONE =
 
 type alias NodePositions =
     Dict NodeId Position
+
+
+stringifyXY : Position -> ( String, String )
+stringifyXY position =
+    ( String.fromFloat position.x, String.fromFloat position.y )
 
 
 getNodePosition : NodeId -> NodePositions -> Position
