@@ -1,4 +1,4 @@
-module Commons.TextParser exposing (..)
+module Commons.TextParser exposing (parseEdgeLabel, parsePoint, sliceTextLines)
 
 import Diagrams.Type exposing (NodeId)
 
@@ -25,3 +25,25 @@ parseEdgeLabel words =
 
         _ ->
             Nothing
+
+
+sliceTextLines : Int -> String -> List String
+sliceTextLines chunkSize str =
+    let
+        total =
+            String.length str
+    in
+    sliceHelper chunkSize 0 total str
+
+
+sliceHelper : Int -> Int -> Int -> String -> List String
+sliceHelper chunkSize start total str =
+    if start >= total then
+        []
+
+    else
+        let
+            end_ =
+                Basics.min (start + chunkSize) total
+        in
+        String.slice start end_ str :: sliceHelper chunkSize end_ total str

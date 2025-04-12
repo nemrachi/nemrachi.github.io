@@ -1,9 +1,10 @@
-module Commons.Graphics exposing (arrowLine, calculateViewBoxSize, draggableCircle, draggableDoubleStrokedCircle, noSelectableText, personIcon)
+module Commons.Graphics exposing (arrowLine, calculateViewBoxSize, draggableCircle, draggableDoubleStrokedCircle, draggableRoundedBoxWithText, noSelectableText, personIcon)
 
 import Commons.Constant exposing (const_VIEWBOX_PADDING)
 import Commons.Mouse exposing (onMouseDown)
 import Commons.Msg exposing (Msg)
 import Commons.Position exposing (NodePositions, Position, const_POSITION_ONE, const_POSITION_ZERO, getNodePosition, stringifyXY)
+import Commons.TextParser exposing (sliceTextLines)
 import Css.Class exposing (noSelectSvgAttributes)
 import Diagrams.Type exposing (Node, NodeId)
 import Dict
@@ -98,6 +99,65 @@ circleWithAttrs position radius color extraAttrs =
             ++ extraAttrs
         )
         []
+
+
+
+-- ROUNDED BOX
+
+
+draggableRoundedBoxWithText : NodeId -> Position -> Float -> Float -> String -> Svg Msg
+draggableRoundedBoxWithText nodeId position boxWidth radius color =
+    let
+        lines =
+            sliceTextLines 6 nodeId
+
+        lineHeight =
+            15
+
+        boxHeight =
+            toFloat (lineHeight * List.length lines + lineHeight)
+
+        rectPosX =
+            position.x - (boxWidth / 2)
+
+        rectPosY =
+            position.y - (boxHeight / 2)
+
+        ( textPosX, textPosY ) =
+            stringifyXY (Position position.x (rectPosY + 1.3 * lineHeight))
+    in
+    g [ onMouseDown nodeId ]
+        [ rect
+            [ x (String.fromFloat rectPosX)
+            , y (String.fromFloat rectPosY)
+            , width (String.fromFloat boxWidth)
+            , height (String.fromFloat boxHeight)
+            , rx (String.fromFloat radius)
+            , ry (String.fromFloat radius)
+            , fill color
+            ]
+            []
+        , text_
+            ([ x textPosX, y textPosY, textAnchor "middle", dy ".3em" ]
+                ++ noSelectSvgAttributes
+            )
+            (List.indexedMap
+                (\i line ->
+                    Svg.tspan
+                        [ Svg.Attributes.x textPosX
+                        , Svg.Attributes.dy
+                            (if i == 0 then
+                                "0"
+
+                             else
+                                String.fromFloat lineHeight
+                            )
+                        ]
+                        [ Svg.text line ]
+                )
+                lines
+            )
+        ]
 
 
 

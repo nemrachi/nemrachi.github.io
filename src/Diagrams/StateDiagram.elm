@@ -134,6 +134,9 @@ renderNode nodeId position =
         [ Graphics.draggableDoubleStrokedCircle nodeId position const_START_END_NODE_RADIUS "black" "white" ]
 
     else
-        [ Graphics.draggableCircle nodeId position const_NODE_RADIUS "lightgreen"
-        , Graphics.noSelectableText nodeId position
-        ]
+        [ Graphics.draggableRoundedBoxWithText nodeId position 70 3 "lightgreen" ]
+
+
+-- [ Graphics.draggableCircle nodeId position const_NODE_RADIUS "lightgreen"
+-- , Graphics.noSelectableText nodeId position
+-- ]

@@ -6537,13 +6537,91 @@ var $author$project$Common$Mouse$onMouseDown = function (nodeId) {
 			$author$project$Common$Msg$DragStart(nodeId),
 			$author$project$Common$Mouse$positionDecoder));
 };
+<<<<<<< Updated upstream
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+=======
+var $author$project$Commons$Graphics$draggableCircle = F4(
+	function (nodeId, position, radius, color) {
+		return A4(
+			$author$project$Commons$Graphics$circleWithAttrs,
+			position,
+			radius,
+			color,
+			_List_fromArray(
+				[
+					$author$project$Commons$Mouse$onMouseDown(nodeId)
+				]));
+	});
+var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $author$project$Commons$Graphics$draggableDoubleStrokedCircle = F5(
+	function (nodeId, position, radius, innerColor, outerColor) {
+		return A2(
+			$elm$svg$Svg$g,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A4(
+					$author$project$Commons$Graphics$circleWithAttrs,
+					position,
+					radius,
+					outerColor,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$stroke(innerColor),
+							$elm$svg$Svg$Attributes$strokeWidth('1')
+						])),
+					A4(
+					$author$project$Commons$Graphics$circleWithAttrs,
+					position,
+					radius - 5,
+					innerColor,
+					_List_fromArray(
+						[
+							$author$project$Commons$Mouse$onMouseDown(nodeId)
+						]))
+				]));
+	});
+var $elm$svg$Svg$Attributes$dy = _VirtualDom_attribute('dy');
+var $elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
+var $author$project$Css$Class$noSelectSvgAttributes = _List_fromArray(
+	[
+		$elm$svg$Svg$Attributes$style('-webkit-user-select: none'),
+		$elm$svg$Svg$Attributes$style('-moz-user-select: none'),
+		$elm$svg$Svg$Attributes$style('-ms-user-select: none'),
+		$elm$svg$Svg$Attributes$style('user-select: none')
+	]);
+var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
+var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
+var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
+var $author$project$Commons$TextParser$sliceHelper = F4(
+	function (chunkSize, start, total, str) {
+		if (_Utils_cmp(start, total) > -1) {
+			return _List_Nil;
+		} else {
+			var end_ = A2($elm$core$Basics$min, start + chunkSize, total);
+			return A2(
+				$elm$core$List$cons,
+				A3($elm$core$String$slice, start, end_, str),
+				A4($author$project$Commons$TextParser$sliceHelper, chunkSize, end_, total, str));
+		}
+	});
+var $author$project$Commons$TextParser$sliceTextLines = F2(
+	function (chunkSize, str) {
+		var total = $elm$core$String$length(str);
+		return A4($author$project$Commons$TextParser$sliceHelper, chunkSize, 0, total, str);
+	});
+>>>>>>> Stashed changes
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
 var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
+var $elm$svg$Svg$tspan = $elm$svg$Svg$trustedNode('tspan');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+<<<<<<< Updated upstream
 var $author$project$Diagram$StateDiagram$renderNode = F2(
 	function (nodeId, position) {
 		var posY = $elm$core$String$fromFloat(position.y);
@@ -6575,6 +6653,89 @@ var $author$project$Diagram$StateDiagram$renderNode = F2(
 						$elm$svg$Svg$text(nodeId)
 					]))
 			]);
+=======
+var $author$project$Commons$Graphics$draggableRoundedBoxWithText = F5(
+	function (nodeId, position, boxWidth, radius, color) {
+		var rectPosX = position.x - (boxWidth / 2);
+		var lines = A2($author$project$Commons$TextParser$sliceTextLines, 6, nodeId);
+		var lineHeight = 15;
+		var boxHeight = (lineHeight * $elm$core$List$length(lines)) + lineHeight;
+		var rectPosY = position.y - (boxHeight / 2);
+		var _v0 = $author$project$Commons$Position$stringifyXY(
+			A2($author$project$Commons$Position$Position, position.x, rectPosY + (1.3 * lineHeight)));
+		var textPosX = _v0.a;
+		var textPosY = _v0.b;
+		return A2(
+			$elm$svg$Svg$g,
+			_List_fromArray(
+				[
+					$author$project$Commons$Mouse$onMouseDown(nodeId)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$rect,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x(
+							$elm$core$String$fromFloat(rectPosX)),
+							$elm$svg$Svg$Attributes$y(
+							$elm$core$String$fromFloat(rectPosY)),
+							$elm$svg$Svg$Attributes$width(
+							$elm$core$String$fromFloat(boxWidth)),
+							$elm$svg$Svg$Attributes$height(
+							$elm$core$String$fromFloat(boxHeight)),
+							$elm$svg$Svg$Attributes$rx(
+							$elm$core$String$fromFloat(radius)),
+							$elm$svg$Svg$Attributes$ry(
+							$elm$core$String$fromFloat(radius)),
+							$elm$svg$Svg$Attributes$fill(color)
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$text_,
+					_Utils_ap(
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$x(textPosX),
+								$elm$svg$Svg$Attributes$y(textPosY),
+								$elm$svg$Svg$Attributes$textAnchor('middle'),
+								$elm$svg$Svg$Attributes$dy('.3em')
+							]),
+						$author$project$Css$Class$noSelectSvgAttributes),
+					A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (i, line) {
+								return A2(
+									$elm$svg$Svg$tspan,
+									_List_fromArray(
+										[
+											$elm$svg$Svg$Attributes$x(textPosX),
+											$elm$svg$Svg$Attributes$dy(
+											(!i) ? '0' : $elm$core$String$fromFloat(lineHeight))
+										]),
+									_List_fromArray(
+										[
+											$elm$svg$Svg$text(line)
+										]));
+							}),
+						lines))
+				]));
+	});
+var $author$project$Diagrams$StateDiagram$renderNode = F2(
+	function (nodeId, position) {
+		return _Utils_eq(nodeId, $author$project$Commons$Constant$const_START) ? _List_fromArray(
+			[
+				A4($author$project$Commons$Graphics$draggableCircle, nodeId, position, $author$project$Commons$Constant$const_START_END_NODE_RADIUS, 'black')
+			]) : (_Utils_eq(nodeId, $author$project$Commons$Constant$const_END) ? _List_fromArray(
+			[
+				A5($author$project$Commons$Graphics$draggableDoubleStrokedCircle, nodeId, position, $author$project$Commons$Constant$const_START_END_NODE_RADIUS, 'black', 'white')
+			]) : _List_fromArray(
+			[
+				A5($author$project$Commons$Graphics$draggableRoundedBoxWithText, nodeId, position, 70, 3, 'lightgreen')
+			]));
+>>>>>>> Stashed changes
 	});
 var $elm$core$Basics$sqrt = _Basics_sqrt;
 var $author$project$Diagram$StateDiagram$calculateArrowPoints = F2(
@@ -6636,8 +6797,12 @@ var $author$project$Diagram$StateDiagram$renderTransition = F3(
 	});
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+<<<<<<< Updated upstream
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $author$project$Diagram$StateDiagram$renderStateDiagram = F2(
+=======
+var $author$project$Diagrams$StateDiagram$renderStateDiagram = F2(
+>>>>>>> Stashed changes
 	function (diaram, positions) {
 		var vb = $author$project$Diagram$StateDiagram$calculateViewBoxSize(positions);
 		return A2(
@@ -6668,7 +6833,182 @@ var $author$project$Diagram$StateDiagram$renderStateDiagram = F2(
 						function (_v1) {
 							var node = _v1.a;
 							var position = _v1.b;
+<<<<<<< Updated upstream
 							return A2($author$project$Diagram$StateDiagram$renderNode, node, position);
+=======
+							return A2($author$project$Diagrams$StateDiagram$renderNode, node, position);
+						},
+						$elm$core$Dict$toList(positions)))));
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Commons$Graphics$noSelectableText = F2(
+	function (nodeId, position) {
+		var _v0 = $author$project$Commons$Position$stringifyXY(position);
+		var posX = _v0.a;
+		var posY = _v0.b;
+		return A2(
+			$elm$svg$Svg$text_,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x(posX),
+						$elm$svg$Svg$Attributes$y(posY),
+						$elm$svg$Svg$Attributes$textAnchor('middle'),
+						$elm$svg$Svg$Attributes$dy('.3em')
+					]),
+				$author$project$Css$Class$noSelectSvgAttributes),
+			_List_fromArray(
+				[
+					$elm$svg$Svg$text(nodeId)
+				]));
+	});
+var $author$project$Commons$Graphics$personIcon = F2(
+	function (nodeId, position) {
+		var _v0 = $author$project$Commons$Position$stringifyXY(position);
+		var posX = _v0.a;
+		var posY = _v0.b;
+		return A2(
+			$elm$svg$Svg$g,
+			_List_fromArray(
+				[
+					$author$project$Commons$Mouse$onMouseDown(nodeId)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx(posX),
+							$elm$svg$Svg$Attributes$cy(posY),
+							$elm$svg$Svg$Attributes$r('10'),
+							$elm$svg$Svg$Attributes$fill('black')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(posX),
+							$elm$svg$Svg$Attributes$y1(
+							$elm$core$String$fromFloat(position.y + 10)),
+							$elm$svg$Svg$Attributes$x2(posX),
+							$elm$svg$Svg$Attributes$y2(
+							$elm$core$String$fromFloat(position.y + 30)),
+							$elm$svg$Svg$Attributes$stroke('black'),
+							$elm$svg$Svg$Attributes$strokeWidth('2')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$elm$core$String$fromFloat(position.x - 10)),
+							$elm$svg$Svg$Attributes$y1(
+							$elm$core$String$fromFloat(position.y + 15)),
+							$elm$svg$Svg$Attributes$x2(
+							$elm$core$String$fromFloat(position.x + 10)),
+							$elm$svg$Svg$Attributes$y2(
+							$elm$core$String$fromFloat(position.y + 15)),
+							$elm$svg$Svg$Attributes$stroke('black'),
+							$elm$svg$Svg$Attributes$strokeWidth('2')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$elm$core$String$fromFloat(position.x)),
+							$elm$svg$Svg$Attributes$y1(
+							$elm$core$String$fromFloat(position.y + 30)),
+							$elm$svg$Svg$Attributes$x2(
+							$elm$core$String$fromFloat(position.x + 10)),
+							$elm$svg$Svg$Attributes$y2(
+							$elm$core$String$fromFloat(position.y + 40)),
+							$elm$svg$Svg$Attributes$stroke('black'),
+							$elm$svg$Svg$Attributes$strokeWidth('2')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$elm$core$String$fromFloat(position.x)),
+							$elm$svg$Svg$Attributes$y1(
+							$elm$core$String$fromFloat(position.y + 30)),
+							$elm$svg$Svg$Attributes$x2(
+							$elm$core$String$fromFloat(position.x - 10)),
+							$elm$svg$Svg$Attributes$y2(
+							$elm$core$String$fromFloat(position.y + 40)),
+							$elm$svg$Svg$Attributes$stroke('black'),
+							$elm$svg$Svg$Attributes$strokeWidth('2')
+						]),
+					_List_Nil)
+				]));
+	});
+var $author$project$Diagrams$UseCaseDiagram$renderNode = F3(
+	function (actorIds, nodeId, position) {
+		return A2($elm$core$List$member, nodeId, actorIds) ? _List_fromArray(
+			[
+				A2($author$project$Commons$Graphics$personIcon, nodeId, position),
+				A2(
+				$author$project$Commons$Graphics$noSelectableText,
+				nodeId,
+				A2($author$project$Commons$Position$Position, position.x, position.y + 50))
+			]) : _List_fromArray(
+			[
+				A5($author$project$Commons$Graphics$draggableRoundedBoxWithText, nodeId, position, 70, 3, 'lightgreen')
+			]);
+	});
+var $author$project$Diagrams$UseCaseDiagram$renderTransition = F3(
+	function (parentId, positions, child) {
+		return A5($author$project$Commons$Graphics$arrowLine, parentId, $author$project$Commons$Constant$const_NODE_RADIUS, positions, child, $author$project$Commons$Constant$const_NODE_RADIUS);
+	});
+var $author$project$Diagrams$UseCaseDiagram$renderUseCaseDiagram = F2(
+	function (diagram, positions) {
+		var vb = $author$project$Commons$Graphics$calculateViewBoxSize(positions);
+		var actorIds = $elm$core$Dict$keys(diagram);
+		return A2(
+			$elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$viewBox(vb),
+					$elm$svg$Svg$Attributes$preserveAspectRatio('xMidYMid meet'),
+					$elm$svg$Svg$Attributes$width('100%'),
+					$elm$svg$Svg$Attributes$height('100%')
+				]),
+			_Utils_ap(
+				$author$project$Commons$Constant$const_SVG_ARROW,
+				_Utils_ap(
+					A2(
+						$elm$core$List$concatMap,
+						function (_v0) {
+							var parent = _v0.a;
+							var children = _v0.b;
+							return A2(
+								$elm$core$List$concatMap,
+								A2($author$project$Diagrams$UseCaseDiagram$renderTransition, parent, positions),
+								children);
+						},
+						$elm$core$Dict$toList(diagram)),
+					A2(
+						$elm$core$List$concatMap,
+						function (_v1) {
+							var node = _v1.a;
+							var position = _v1.b;
+							return A3($author$project$Diagrams$UseCaseDiagram$renderNode, actorIds, node, position);
+>>>>>>> Stashed changes
 						},
 						$elm$core$Dict$toList(positions)))));
 	});
