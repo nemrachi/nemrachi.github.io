@@ -1,6 +1,6 @@
 module Diagrams.UseCaseDiagram exposing (parseUseCaseDiagram, renderUseCaseDiagram)
 
-import Commons.Constant exposing (const_NODE_RADIUS, const_SVG_ARROW)
+import Commons.Constant exposing (const_NODE_BOX_CORNER_RADIUS, const_PERSON_NODE_SIZE, const_SVG_ARROW)
 import Commons.Dict exposing (getFirstKey)
 import Commons.Drag exposing (preserveDraggedPositions)
 import Commons.Graphics as Graphics
@@ -104,15 +104,13 @@ renderUseCaseDiagram diagram positions =
 
 renderTransition : NodeId -> NodePositions -> Node -> List (Svg msg)
 renderTransition parentId positions child =
-    Graphics.arrowLine parentId const_NODE_RADIUS positions child const_NODE_RADIUS
+    Graphics.arrowLine parentId const_PERSON_NODE_SIZE positions child (Graphics.calculateNodeSize child.name)
 
 
 renderNode : List NodeId -> NodeId -> Position -> List (Svg Msg)
 renderNode actorIds nodeId position =
     if List.member nodeId actorIds then
-        [ Graphics.personIcon nodeId position
-        , Graphics.noSelectableText nodeId (Position position.x (position.y + 50))
-        ]
+        [ Graphics.personIconWithText nodeId position ]
 
     else
-        [ Graphics.draggableRoundedBoxWithText nodeId position 70 3 "lightgreen" ]
+        [ Graphics.draggableRoundedBoxWithText nodeId position const_NODE_BOX_CORNER_RADIUS "lightgreen" ]

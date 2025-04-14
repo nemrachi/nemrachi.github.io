@@ -1,4 +1,4 @@
-module Diagrams.Type exposing (Diagram, Edge, Node, NodeId)
+module Diagrams.Type exposing (Diagram, Edge, Node, NodeId, NodeSize)
 
 import Dict exposing (Dict)
 
@@ -22,6 +22,12 @@ type alias Edge =
 type alias Node =
     { name : NodeId
     , edgeLabel : Maybe String
+    }
+
+
+type alias NodeSize =
+    { width : Float
+    , height : Float
     }
 
 

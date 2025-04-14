@@ -1,5 +1,6 @@
 module Commons.Constant exposing (..)
 
+import Diagrams.Type exposing (NodeSize)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
@@ -28,18 +29,39 @@ const_XY_OFFSET =
     150
 
 
-const_NODE_RADIUS : Float
-const_NODE_RADIUS =
-    30
-
-
 const_START_END_NODE_RADIUS : Float
 const_START_END_NODE_RADIUS =
-    const_NODE_RADIUS / 2
+    15
+
+
+const_TEXT_LINE_HEIGHT : Float
+const_TEXT_LINE_HEIGHT =
+    15
+
+
+const_NODE_BOX_WIDTH : Float
+const_NODE_BOX_WIDTH =
+    70
+
+
+const_NODE_BOX_CORNER_RADIUS : Float
+const_NODE_BOX_CORNER_RADIUS =
+    3
+
+
+const_SMALL_NODE_BOX_SIZE : NodeSize
+const_SMALL_NODE_BOX_SIZE =
+    { width = 1, height = 1 }
+
+
+const_PERSON_NODE_SIZE : NodeSize
+const_PERSON_NODE_SIZE =
+    { width = 30, height = 70 }
 
 
 const_SVG_ARROW : List (Svg msg)
 const_SVG_ARROW =
+    -- source: https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/marker
     [ defs []
         [ marker
             [ id "arrow"

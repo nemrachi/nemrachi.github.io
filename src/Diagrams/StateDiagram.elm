@@ -1,12 +1,12 @@
 module Diagrams.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
 
-import Commons.Constant exposing (const_END, const_NODE_RADIUS, const_START, const_START_END_NODE_RADIUS, const_SVG_ARROW)
+import Commons.Constant exposing (const_END, const_NODE_BOX_CORNER_RADIUS, const_SMALL_NODE_BOX_SIZE, const_START, const_START_END_NODE_RADIUS, const_SVG_ARROW)
 import Commons.Drag exposing (preserveDraggedPositions)
 import Commons.Graphics as Graphics
 import Commons.Msg exposing (Msg(..))
 import Commons.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ZERO)
 import Commons.TextParser exposing (parseEdgeLabel, parsePoint)
-import Diagrams.Type exposing (Diagram, Edge, Node, NodeId)
+import Diagrams.Type exposing (Diagram, Edge, Node, NodeId, NodeSize)
 import Dict
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -113,16 +113,16 @@ renderStateDiagram diaram positions =
 
 renderTransition : NodeId -> NodePositions -> Node -> List (Svg msg)
 renderTransition parentId positions child =
-    Graphics.arrowLine parentId (getNodeRadius parentId) positions child (getNodeRadius child.name)
+    Graphics.arrowLine parentId (getNodeSize parentId) positions child (getNodeSize child.name)
 
 
-getNodeRadius : NodeId -> Float
-getNodeRadius nodeId =
+getNodeSize : NodeId -> NodeSize
+getNodeSize nodeId =
     if nodeId == const_START || nodeId == const_END then
-        const_START_END_NODE_RADIUS
+        const_SMALL_NODE_BOX_SIZE
 
     else
-        const_NODE_RADIUS
+        Graphics.calculateNodeSize nodeId
 
 
 renderNode : NodeId -> Position -> List (Svg Msg)
@@ -134,7 +134,8 @@ renderNode nodeId position =
         [ Graphics.draggableDoubleStrokedCircle nodeId position const_START_END_NODE_RADIUS "black" "white" ]
 
     else
-        [ Graphics.draggableRoundedBoxWithText nodeId position 70 3 "lightgreen" ]
+        [ Graphics.draggableRoundedBoxWithText nodeId position const_NODE_BOX_CORNER_RADIUS "lightgreen" ]
+
 
 
 -- [ Graphics.draggableCircle nodeId position const_NODE_RADIUS "lightgreen"

@@ -35,7 +35,7 @@ preserveDraggedPositions oldPositions newPositions =
     Dict.merge
         -- if only in oldPositions, skip
         (\_ _ acc -> acc)
-        -- if key is in both, use value from oldPositions
+        -- if in both, use value from oldPositions
         (\key oldPos _ acc -> Dict.insert key oldPos acc)
         -- if only in newPositions, keep original value from newPositions
         (\key newPos acc -> Dict.insert key newPos acc)
