@@ -51,7 +51,7 @@ const_NODE_BOX_CORNER_RADIUS =
 
 const_SMALL_NODE_BOX_SIZE : NodeSize
 const_SMALL_NODE_BOX_SIZE =
-    { width = 1, height = 1 }
+    { width = 30, height = 30 }
 
 
 const_PERSON_NODE_SIZE : NodeSize
