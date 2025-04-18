@@ -37,6 +37,8 @@ elm-format .
 
 Nice-to-have:
 
+- Labels on edges.
+  - **actual state:** Labels are saved in nodes (type `Node`), but they are not rendered in diagram.
 - Better dragging logic.
   - **actual state:** Mouse is going faster than dragged object. Because mouse position is from whole view, but nodes are rendered and moved only in half of the view (svg part).
 - Dynamic node width based on text content.

@@ -2,7 +2,7 @@ module Commons.Position exposing (NodePositions, Position, calculatePositions, c
 
 import Commons.Constant exposing (const_XY_OFFSET)
 import Commons.Dict exposing (pop)
-import Diagrams.Type exposing (Diagram, Node, NodeId)
+import Diagrams.Type exposing (Graph, Node, NodeId)
 import Dict exposing (Dict)
 
 
@@ -36,8 +36,8 @@ getNodePosition nodeId nodePositions =
     Dict.get nodeId nodePositions |> Maybe.withDefault const_POSITION_ZERO
 
 
-calculatePositions : NodeId -> Position -> Diagram -> NodePositions -> NodePositions
-calculatePositions parentId position diagram visited =
+calculatePositions : NodeId -> Position -> Graph -> NodePositions -> NodePositions
+calculatePositions parentId position graph visited =
     let
         ( visitedParent, parentPosition ) =
             case Dict.get parentId visited of
@@ -55,7 +55,7 @@ calculatePositions parentId position diagram visited =
                     ( updatedVisited, uniquePosition )
 
         ( children, remainingDiagram ) =
-            pop parentId diagram
+            pop parentId graph
 
         visitedChildren =
             case children of

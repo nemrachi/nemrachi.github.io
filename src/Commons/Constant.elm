@@ -49,14 +49,19 @@ const_NODE_BOX_CORNER_RADIUS =
     3
 
 
-const_SMALL_NODE_BOX_SIZE : NodeSize
-const_SMALL_NODE_BOX_SIZE =
+const_START_END_NODE_SIZE : NodeSize
+const_START_END_NODE_SIZE =
     { width = 30, height = 30 }
 
 
 const_PERSON_NODE_SIZE : NodeSize
 const_PERSON_NODE_SIZE =
     { width = 30, height = 70 }
+
+
+const_NODE_COLOR : String
+const_NODE_COLOR =
+    "lightgreen"
 
 
 const_SVG_ARROW : List (Svg msg)
@@ -74,30 +79,6 @@ const_SVG_ARROW =
             ]
             [ Svg.path
                 [ d "M0,0 L0,7 L10,3.5 Z" -- arrow pat
-                , fill "black"
-                ]
-                []
-            ]
-        ]
-    ]
-
-
-const_SVG_CIRCLE : List (Svg msg)
-const_SVG_CIRCLE =
-    [ defs []
-        [ marker
-            [ id "circle"
-            , markerWidth "10"
-            , markerHeight "10"
-            , refX "5"
-            , refY "5"
-            , orient "auto"
-            , markerUnits "strokeWidth"
-            ]
-            [ Svg.circle
-                [ cx "5"
-                , cy "5"
-                , r "4"
                 , fill "black"
                 ]
                 []

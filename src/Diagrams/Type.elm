@@ -1,4 +1,4 @@
-module Diagrams.Type exposing (Diagram, Edge, Node, NodeId, NodeSize)
+module Diagrams.Type exposing (Edge, Graph, Node, NodeId, NodeSize)
 
 import Dict exposing (Dict)
 
@@ -37,5 +37,5 @@ type alias NodeSize =
 -- https://sporto.github.io/elm-patterns/advanced/phantom-types.html
 
 
-type alias Diagram =
+type alias Graph =
     Dict NodeId (List Node)

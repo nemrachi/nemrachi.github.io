@@ -1,13 +1,12 @@
 module Diagrams.UseCaseDiagram exposing (parseUseCaseDiagram, renderUseCaseDiagram)
 
-import Commons.Constant exposing (const_NODE_BOX_CORNER_RADIUS, const_PERSON_NODE_SIZE, const_SVG_ARROW)
-import Commons.Dict exposing (getFirstKey)
+import Commons.Constant exposing (const_NODE_BOX_CORNER_RADIUS, const_NODE_COLOR, const_PERSON_NODE_SIZE, const_SVG_ARROW)
 import Commons.Drag exposing (preserveDraggedPositions)
 import Commons.Graphics as Graphics
 import Commons.Msg exposing (Msg)
 import Commons.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ZERO)
-import Commons.TextParser exposing (parseEdgeLabel)
-import Diagrams.Type exposing (Diagram, Edge, Node, NodeId)
+import Commons.TextParser exposing (getFirstParentNode, parseEdgeLabel)
+import Diagrams.Type exposing (Edge, Graph, Node, NodeId)
 import Dict
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -17,13 +16,13 @@ import Svg.Attributes exposing (..)
 -- TODO  sizable ovals for texts (or diff shape) an wrappable text
 
 
-parseUseCaseDiagram : List String -> NodePositions -> ( Diagram, NodePositions )
+parseUseCaseDiagram : List String -> NodePositions -> ( Graph, NodePositions )
 parseUseCaseDiagram diagramLines nodePositions =
     diagramLines
         |> List.filterMap parseLine
-        |> buildDiagram
-        |> (\diagram -> ( diagram, calculatePositions (getFirstKey diagram |> Maybe.withDefault "") const_POSITION_ZERO diagram Dict.empty ))
-        |> (\( diagram, generatedPositions ) -> ( diagram, preserveDraggedPositions nodePositions generatedPositions ))
+        |> buildGraph
+        |> (\graph -> ( graph, calculatePositions (getFirstParentNode diagramLines) const_POSITION_ZERO graph Dict.empty ))
+        |> (\( graph, generatedPositions ) -> ( graph, preserveDraggedPositions nodePositions generatedPositions ))
 
 
 
@@ -48,13 +47,13 @@ parseLine line =
 -- GET DIAGRAM
 
 
-buildDiagram : List Edge -> Diagram
-buildDiagram edges =
+buildGraph : List Edge -> Graph
+buildGraph edges =
     List.foldl addEdgeToDiagram Dict.empty edges
 
 
-addEdgeToDiagram : Edge -> Diagram -> Diagram
-addEdgeToDiagram edge diagram =
+addEdgeToDiagram : Edge -> Graph -> Graph
+addEdgeToDiagram edge graph =
     let
         parent =
             edge.from
@@ -66,21 +65,21 @@ addEdgeToDiagram edge diagram =
         (\maybeNodes ->
             Just (childNode :: Maybe.withDefault [] maybeNodes)
         )
-        diagram
+        graph
 
 
 
 -- RENDERING
 
 
-renderUseCaseDiagram : Diagram -> NodePositions -> Svg Msg
-renderUseCaseDiagram diagram positions =
+renderUseCaseDiagram : Graph -> NodePositions -> Svg Msg
+renderUseCaseDiagram graph positions =
     let
         vb =
             Graphics.calculateViewBoxSize positions
 
         actorIds =
-            Dict.keys diagram
+            Dict.keys graph
     in
     svg
         [ viewBox vb
@@ -93,7 +92,7 @@ renderUseCaseDiagram diagram positions =
                 (\( parent, children ) ->
                     List.concatMap (renderTransition parent positions) children
                 )
-                (Dict.toList diagram)
+                (Dict.toList graph)
             ++ List.concatMap
                 (\( node, position ) ->
                     renderNode actorIds node position
@@ -113,4 +112,4 @@ renderNode actorIds nodeId position =
         [ Graphics.personIconWithText nodeId position ]
 
     else
-        [ Graphics.draggableRoundedBoxWithText nodeId position const_NODE_BOX_CORNER_RADIUS "lightgreen" ]
+        [ Graphics.draggableRoundedBoxWithText nodeId position const_NODE_BOX_CORNER_RADIUS const_NODE_COLOR ]

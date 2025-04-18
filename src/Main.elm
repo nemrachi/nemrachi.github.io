@@ -7,7 +7,7 @@ import Commons.Msg exposing (Msg(..))
 import Commons.Position exposing (NodePositions)
 import Css.Class
 import Diagrams.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
-import Diagrams.Type exposing (Diagram)
+import Diagrams.Type exposing (Graph)
 import Diagrams.UseCaseDiagram exposing (parseUseCaseDiagram, renderUseCaseDiagram)
 import Dict
 import Html exposing (Html, div, textarea)
@@ -23,7 +23,7 @@ import List
 type alias Model =
     { diagramType : DiagramType
     , userText : String
-    , diagram : Diagram
+    , graph : Graph
     , nodePositions : NodePositions
     , drag : Maybe Drag
     }
@@ -47,7 +47,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { diagramType = Unknown
       , userText = ""
-      , diagram = Dict.empty
+      , graph = Dict.empty
       , nodePositions = Dict.empty
       , drag = Nothing
       }
@@ -64,11 +64,14 @@ update msg model =
     case msg of
         TextChange text ->
             let
+                diagramType =
+                    detectDiagramType text
+
                 diagramLines =
                     List.tail (String.lines text) |> Maybe.withDefault []
 
-                ( newDiagram, newPositions ) =
-                    case detectDiagramType text of
+                ( newGraph, newPositions ) =
+                    case diagramType of
                         StateDiagram ->
                             parseStateDiagram diagramLines model.nodePositions
 
@@ -79,9 +82,9 @@ update msg model =
                             ( Dict.empty, Dict.empty )
             in
             ( { model
-                | diagramType = detectDiagramType text
+                | diagramType = diagramType
                 , userText = text
-                , diagram = newDiagram
+                , graph = newGraph
                 , nodePositions = newPositions
               }
             , Cmd.none
@@ -93,7 +96,7 @@ update msg model =
             )
 
         DragAt pos ->
-            ( { model | drag = Maybe.map (\d -> { d | start = pos }) model.drag }
+            ( { model | drag = Maybe.map (\d -> { d | current = pos }) model.drag }
             , Cmd.none
             )
 
@@ -143,18 +146,18 @@ renderDiagram : Model -> Html Msg
 renderDiagram model =
     case model.diagramType of
         StateDiagram ->
-            if Dict.isEmpty model.diagram then
+            if Dict.isEmpty model.graph then
                 div [] [ Html.text "Invalid state diagram syntax" ]
 
             else
-                renderStateDiagram model.diagram (applyDragToPosition model.drag model.nodePositions)
+                renderStateDiagram model.graph (applyDragToPosition model.drag model.nodePositions)
 
         UseCaseDiagram ->
-            if Dict.isEmpty model.diagram then
+            if Dict.isEmpty model.graph then
                 div [] [ Html.text "Invalid use case diagram syntax" ]
 
             else
-                renderUseCaseDiagram model.diagram (applyDragToPosition model.drag model.nodePositions)
+                renderUseCaseDiagram model.graph (applyDragToPosition model.drag model.nodePositions)
 
         Unknown ->
             div [] []

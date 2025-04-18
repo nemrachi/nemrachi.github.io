@@ -19,8 +19,8 @@ applyDragToPosition maybeDrag positions =
             Dict.update nodeId
                 (Maybe.map
                     (\pos ->
-                        { x = pos.x + (start.x - current.x)
-                        , y = pos.y + (start.y - current.y)
+                        { x = pos.x + (current.x - start.x)
+                        , y = pos.y + (current.y - start.y)
                         }
                     )
                 )

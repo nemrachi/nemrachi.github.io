@@ -1,4 +1,4 @@
-module Commons.TextParser exposing (parseEdgeLabel, parsePoint, sliceTextLines)
+module Commons.TextParser exposing (getFirstParentNode, parseEdgeLabel, parsePoint, sliceTextLines)
 
 import Diagrams.Type exposing (NodeId)
 
@@ -27,6 +27,14 @@ parseEdgeLabel words =
             Nothing
 
 
+getFirstParentNode : List String -> NodeId
+getFirstParentNode diagramLines =
+    diagramLines
+        |> List.filterMap extractFirstWordHelper
+        |> List.head
+        |> Maybe.withDefault ""
+
+
 sliceTextLines : Int -> String -> List String
 sliceTextLines chunkSize str =
     let
@@ -34,6 +42,20 @@ sliceTextLines chunkSize str =
             String.length str
     in
     sliceHelper chunkSize 0 total str
+
+
+
+-- HELPERS
+
+
+extractFirstWordHelper : String -> Maybe NodeId
+extractFirstWordHelper line =
+    case String.words line of
+        source :: "-->" :: _ ->
+            Just source
+
+        _ ->
+            Nothing
 
 
 sliceHelper : Int -> Int -> Int -> String -> List String
