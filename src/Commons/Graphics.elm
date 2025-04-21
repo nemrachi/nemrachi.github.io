@@ -1,12 +1,12 @@
 module Commons.Graphics exposing (arrowLine, calculateNodeSize, calculateViewBoxSize, draggableCircle, draggableDoubleStrokedCircle, draggableRoundedBoxWithText, noSelectableText, personIconWithText)
 
 import Commons.Constant exposing (const_NODE_BOX_WIDTH, const_TEXT_LINE_HEIGHT, const_VIEWBOX_PADDING)
-import Commons.Mouse exposing (onMouseDown)
+import Commons.Drag exposing (onMouseDown)
 import Commons.Msg exposing (Msg)
-import Commons.Position exposing (NodePositions, Position, const_POSITION_ONE, const_POSITION_ZERO, getNodePosition, stringifyXY)
+import Commons.Position exposing (NodePositions, Position, const_POSITION_ZERO, getNodePosition, stringifyXY)
 import Commons.TextParser exposing (sliceTextLines)
 import Css.Class exposing (noSelectSvgAttributes)
-import Diagrams.Type exposing (Node, NodeId, NodeSize)
+import Diagrams.Graph exposing (Node, NodeId, NodeSize)
 import Dict
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -23,7 +23,7 @@ arrowLine fromNodeId fromSize positions toNode toSize =
             getNodePosition fromNodeId positions
 
         toPosition =
-            Dict.get toNode.name positions |> Maybe.withDefault const_POSITION_ONE
+            Dict.get toNode.name positions |> Maybe.withDefault const_POSITION_ZERO
 
         ( start, end ) =
             calculateArrowPointsForBox fromPosition fromSize toPosition toSize
@@ -70,12 +70,12 @@ noSelectableText nodeId position =
 
 draggableCircle : NodeId -> Position -> Float -> String -> Svg Msg
 draggableCircle nodeId position radius color =
-    circleWithAttrs position radius color [ onMouseDown nodeId ]
+    circleWithAttrs position radius color [ onMouseDown nodeId position ]
 
 
 draggableDoubleStrokedCircle : NodeId -> Position -> Float -> String -> String -> Svg Msg
 draggableDoubleStrokedCircle nodeId position radius innerColor outerColor =
-    Svg.g [ onMouseDown nodeId ]
+    Svg.g [ onMouseDown nodeId position ]
         [ circleWithAttrs position radius outerColor [ stroke innerColor, strokeWidth "1" ]
         , circleWithAttrs position (radius - 5) innerColor []
         ]
@@ -120,7 +120,7 @@ draggableRoundedBoxWithText nodeId position cornerRadius color =
         ( textPosX, textPosY ) =
             stringifyXY (Position position.x (rectPosY + 1.3 * const_TEXT_LINE_HEIGHT))
     in
-    g [ onMouseDown nodeId ]
+    g [ onMouseDown nodeId position ]
         [ rect
             [ x (String.fromFloat rectPosX)
             , y (String.fromFloat rectPosY)
@@ -196,7 +196,7 @@ personIconWithText nodeId position =
         ( legLeftX, legRightX ) =
             ( String.fromFloat (position.x - 10), String.fromFloat (position.x + 10) )
     in
-    g [ onMouseDown nodeId ]
+    g [ onMouseDown nodeId position ]
         [ circle [ cx posX, cy headY, r "10", fill "black" ] [] -- head
         , line [ x1 posX, y1 (String.fromFloat bodyStartY), x2 posX, y2 (String.fromFloat bodyEndY), stroke "black", strokeWidth "2" ] [] -- body
         , line [ x1 armLeftX, y1 (String.fromFloat armY), x2 armRightX, y2 (String.fromFloat armY), stroke "black", strokeWidth "2" ] [] -- arms

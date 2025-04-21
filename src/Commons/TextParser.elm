@@ -1,6 +1,6 @@
 module Commons.TextParser exposing (getFirstParentNode, parseEdgeLabel, parsePoint, sliceTextLines)
 
-import Diagrams.Type exposing (NodeId)
+import Diagrams.Graph exposing (NodeId)
 
 
 
@@ -65,7 +65,7 @@ sliceHelper chunkSize start total str =
 
     else
         let
-            end_ =
+            end =
                 Basics.min (start + chunkSize) total
         in
-        String.slice start end_ str :: sliceHelper chunkSize end_ total str
+        String.slice start end str :: sliceHelper chunkSize end total str

@@ -1,4 +1,4 @@
-module Diagrams.Type exposing (Edge, Graph, Node, NodeId, NodeSize)
+module Diagrams.Graph exposing (Edge, Graph, Node, NodeId, NodeSize, buildGraph)
 
 import Dict exposing (Dict)
 
@@ -39,3 +39,28 @@ type alias NodeSize =
 
 type alias Graph =
     Dict NodeId (List Node)
+
+
+
+--- FUNCTIONS
+
+
+buildGraph : List Edge -> Graph
+buildGraph edges =
+    List.foldl addEdgeToDiagram Dict.empty edges
+
+
+addEdgeToDiagram : Edge -> Graph -> Graph
+addEdgeToDiagram edge graph =
+    let
+        parent =
+            edge.from
+
+        childNode =
+            { name = edge.to, edgeLabel = edge.label }
+    in
+    Dict.update parent
+        (\maybeNodes ->
+            Just (childNode :: Maybe.withDefault [] maybeNodes)
+        )
+        graph

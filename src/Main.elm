@@ -1,13 +1,13 @@
 module Main exposing (main)
 
 import Browser
-import Commons.Drag exposing (Drag, applyDragToPosition)
-import Commons.Mouse exposing (onMouseMove, onMouseUp)
+import Commons.Constant exposing (const_EXAMPLE_TEXT)
+import Commons.Drag exposing (Drag, applyDragToPosition, onMouseMove, onMouseUp)
 import Commons.Msg exposing (Msg(..))
-import Commons.Position exposing (NodePositions)
+import Commons.Position exposing (NodePositions, preservePositionsUniquely)
 import Css.Class
+import Diagrams.Graph exposing (Graph)
 import Diagrams.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
-import Diagrams.Type exposing (Graph)
 import Diagrams.UseCaseDiagram exposing (parseUseCaseDiagram, renderUseCaseDiagram)
 import Dict
 import Html exposing (Html, div, textarea)
@@ -73,10 +73,10 @@ update msg model =
                 ( newGraph, newPositions ) =
                     case diagramType of
                         StateDiagram ->
-                            parseStateDiagram diagramLines model.nodePositions
+                            parseStateDiagram diagramLines
 
                         UseCaseDiagram ->
-                            parseUseCaseDiagram diagramLines model.nodePositions
+                            parseUseCaseDiagram diagramLines
 
                         _ ->
                             ( Dict.empty, Dict.empty )
@@ -85,28 +85,32 @@ update msg model =
                 | diagramType = diagramType
                 , userText = text
                 , graph = newGraph
-                , nodePositions = newPositions
+                , nodePositions = preservePositionsUniquely model.nodePositions newPositions
               }
             , Cmd.none
             )
 
-        DragStart nodeId pos ->
-            ( { model | drag = Just (Drag pos pos nodeId) }
+        DragStart nodeId nodePos mousePos ->
+            ( { model | drag = Just (Drag mousePos mousePos nodeId nodePos) }
             , Cmd.none
             )
 
         DragAt pos ->
-            ( { model | drag = Maybe.map (\d -> { d | current = pos }) model.drag }
+            let
+                drag =
+                    Maybe.map (\d -> { d | current = pos }) model.drag
+            in
+            ( { model
+                | nodePositions = applyDragToPosition drag model.nodePositions
+                , drag = drag
+              }
             , Cmd.none
             )
 
         DragEnd ->
             case model.drag of
                 Just _ ->
-                    ( { model
-                        | nodePositions = applyDragToPosition model.drag model.nodePositions
-                        , drag = Nothing
-                      }
+                    ( { model | drag = Nothing }
                     , Cmd.none
                     )
 
@@ -144,23 +148,24 @@ view model =
 
 renderDiagram : Model -> Html Msg
 renderDiagram model =
-    case model.diagramType of
-        StateDiagram ->
-            if Dict.isEmpty model.graph then
-                div [] [ Html.text "Invalid state diagram syntax" ]
+    if Dict.isEmpty model.graph then
+        renderExampleText
 
-            else
-                renderStateDiagram model.graph (applyDragToPosition model.drag model.nodePositions)
+    else
+        case model.diagramType of
+            StateDiagram ->
+                renderStateDiagram model.graph model.nodePositions
 
-        UseCaseDiagram ->
-            if Dict.isEmpty model.graph then
-                div [] [ Html.text "Invalid use case diagram syntax" ]
+            UseCaseDiagram ->
+                renderUseCaseDiagram model.graph model.nodePositions
 
-            else
-                renderUseCaseDiagram model.graph (applyDragToPosition model.drag model.nodePositions)
+            Unknown ->
+                renderExampleText
 
-        Unknown ->
-            div [] []
+
+renderExampleText : Html Msg
+renderExampleText =
+    div [] [ Html.pre [] [ Html.text const_EXAMPLE_TEXT ] ]
 
 
 detectDiagramType : String -> DiagramType

@@ -1,12 +1,11 @@
 module Diagrams.StateDiagram exposing (parseStateDiagram, renderStateDiagram)
 
-import Commons.Constant exposing (const_START_END_NODE_SIZE, const_END, const_NODE_BOX_CORNER_RADIUS, const_NODE_COLOR, const_START, const_START_END_NODE_RADIUS, const_SVG_ARROW)
-import Commons.Drag exposing (preserveDraggedPositions)
+import Commons.Constant exposing (const_END, const_NODE_BOX_CORNER_RADIUS, const_NODE_COLOR, const_START, const_START_END_NODE_RADIUS, const_START_END_NODE_SIZE, const_SVG_ARROW)
 import Commons.Graphics as Graphics
-import Commons.Msg exposing (Msg(..))
+import Commons.Msg exposing (Msg)
 import Commons.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ZERO)
 import Commons.TextParser exposing (parseEdgeLabel, parsePoint)
-import Diagrams.Type exposing (Edge, Graph, Node, NodeId, NodeSize)
+import Diagrams.Graph exposing (Edge, Graph, Node, NodeId, NodeSize, buildGraph)
 import Dict
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -23,14 +22,13 @@ import Svg.Attributes exposing (..)
 -- TODO https://sporto.github.io/elm-patterns/advanced/railway.html
 
 
-parseStateDiagram : List String -> NodePositions -> ( Graph, NodePositions )
-parseStateDiagram diagramLines nodePositions =
+parseStateDiagram : List String -> ( Graph, NodePositions )
+parseStateDiagram diagramLines =
     diagramLines
         -- https://sporto.github.io/elm-patterns/basic/unwrap-maybe-early.html
         |> List.filterMap parseLine
         |> buildGraph
         |> (\graph -> ( graph, calculatePositions const_START const_POSITION_ZERO graph Dict.empty ))
-        |> (\( graph, generatedPositions ) -> ( graph, preserveDraggedPositions nodePositions generatedPositions ))
 
 
 
@@ -49,31 +47,6 @@ parseLine line =
 
         _ ->
             Nothing
-
-
-
--- GET DIAGRAM
-
-
-buildGraph : List Edge -> Graph
-buildGraph edges =
-    List.foldl addEdgeToDiagram Dict.empty edges
-
-
-addEdgeToDiagram : Edge -> Graph -> Graph
-addEdgeToDiagram edge graph =
-    let
-        parent =
-            edge.from
-
-        childNode =
-            { name = edge.to, edgeLabel = edge.label }
-    in
-    Dict.update parent
-        (\maybeNodes ->
-            Just (childNode :: Maybe.withDefault [] maybeNodes)
-        )
-        graph
 
 
 

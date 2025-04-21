@@ -1,6 +1,6 @@
 module Commons.Constant exposing (..)
 
-import Diagrams.Type exposing (NodeSize)
+import Diagrams.Graph exposing (NodeSize)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
@@ -26,7 +26,7 @@ const_VIEWBOX_PADDING =
 
 const_XY_OFFSET : Float
 const_XY_OFFSET =
-    150
+    100
 
 
 const_START_END_NODE_RADIUS : Float
@@ -85,3 +85,24 @@ const_SVG_ARROW =
             ]
         ]
     ]
+
+
+const_EXAMPLE_TEXT : String
+const_EXAMPLE_TEXT =
+    """
+    Examples:
+
+    stateDiagram
+    [*] --> Still
+    Still --> [*]
+    Still --> Moving
+    Moving --> Still
+    Moving --> Crash
+    Crash --> [*]
+
+    ~ or ~
+
+    useCaseDiagram
+    User --> Register
+    Admin --> DeleteAccount
+    """

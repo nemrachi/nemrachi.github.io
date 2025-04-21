@@ -1,28 +1,33 @@
-module Commons.Drag exposing (Drag, applyDragToPosition, preserveDraggedPositions)
+module Commons.Drag exposing (Drag, applyDragToPosition, onMouseDown, onMouseMove, onMouseUp)
 
-import Commons.Position exposing (NodePositions, Position)
-import Diagrams.Type exposing (NodeId)
+import Browser.Events as BE
+import Commons.Msg exposing (Msg(..))
+import Commons.Position exposing (MousePosition, NodePositions, Position)
+import Diagrams.Graph exposing (NodeId)
 import Dict
+import Json.Decode as D
+import Svg
+import Svg.Events as SE
 
 
 type alias Drag =
-    { start : Position
-    , current : Position
+    { start : MousePosition
+    , current : MousePosition
     , nodeId : NodeId
+    , originalNodePosition : Position
     }
 
 
 applyDragToPosition : Maybe Drag -> NodePositions -> NodePositions
 applyDragToPosition maybeDrag positions =
     case maybeDrag of
-        Just { start, current, nodeId } ->
+        Just { start, current, nodeId, originalNodePosition } ->
             Dict.update nodeId
-                (Maybe.map
-                    (\pos ->
-                        { x = pos.x + (current.x - start.x)
-                        , y = pos.y + (current.y - start.y)
+                (\_ ->
+                    Just
+                        { x = originalNodePosition.x + (current.x - start.x)
+                        , y = originalNodePosition.y + (current.y - start.y)
                         }
-                    )
                 )
                 positions
 
@@ -30,15 +35,27 @@ applyDragToPosition maybeDrag positions =
             positions
 
 
-preserveDraggedPositions : NodePositions -> NodePositions -> NodePositions
-preserveDraggedPositions oldPositions newPositions =
-    Dict.merge
-        -- if only in oldPositions, skip
-        (\_ _ acc -> acc)
-        -- if in both, use value from oldPositions
-        (\key oldPos _ acc -> Dict.insert key oldPos acc)
-        -- if only in newPositions, keep original value from newPositions
-        (\key newPos acc -> Dict.insert key newPos acc)
-        oldPositions
-        newPositions
-        Dict.empty
+
+-- MOUSE EVENTS
+
+
+onMouseDown : NodeId -> Position -> Svg.Attribute Msg
+onMouseDown nodeId nodeOriginalPosition =
+    SE.on "mousedown" (D.map (DragStart nodeId nodeOriginalPosition) positionDecoder)
+
+
+onMouseMove : Sub Msg
+onMouseMove =
+    BE.onMouseMove (D.map DragAt positionDecoder)
+
+
+onMouseUp : Sub Msg
+onMouseUp =
+    BE.onMouseUp (D.succeed DragEnd)
+
+
+positionDecoder : D.Decoder Position
+positionDecoder =
+    D.map2 Position
+        (D.field "clientX" D.float)
+        (D.field "clientY" D.float)

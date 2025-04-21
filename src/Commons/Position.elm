@@ -1,8 +1,8 @@
-module Commons.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ONE, const_POSITION_ZERO, getNodePosition, stringifyXY)
+module Commons.Position exposing (MousePosition, NodePositions, Position, calculatePositions, const_POSITION_ZERO, ensureUniquePosition, getNodePosition, preservePositionsUniquely, stringifyXY)
 
 import Commons.Constant exposing (const_XY_OFFSET)
 import Commons.Dict exposing (pop)
-import Diagrams.Type exposing (Graph, Node, NodeId)
+import Diagrams.Graph exposing (Graph, Node, NodeId)
 import Dict exposing (Dict)
 
 
@@ -12,14 +12,13 @@ type alias Position =
     }
 
 
+type alias MousePosition =
+    Position
+
+
 const_POSITION_ZERO : Position
 const_POSITION_ZERO =
     { x = 0, y = 0 }
-
-
-const_POSITION_ONE : Position
-const_POSITION_ONE =
-    { x = 0, y = const_XY_OFFSET }
 
 
 type alias NodePositions =
@@ -70,10 +69,31 @@ calculatePositions parentId position graph visited =
     in
     case nextParent of
         Just next ->
-            calculatePositions next const_POSITION_ONE remainingDiagram visitedChildren
+            calculatePositions next (Position position.x (position.y + const_XY_OFFSET)) remainingDiagram visitedChildren
 
         Nothing ->
             visitedChildren
+
+
+preservePositionsUniquely : NodePositions -> NodePositions -> NodePositions
+preservePositionsUniquely oldPositions newPositions =
+    let
+        merged =
+            Dict.merge
+                -- if only in oldPositions, skip
+                (\_ _ acc -> acc)
+                -- if in both, use value from oldPositions
+                (\key oldPos _ acc -> Dict.insert key oldPos acc)
+                -- if only in newPositions, keep original value from newPositions
+                (\key newPos acc -> Dict.insert key newPos acc)
+                oldPositions
+                newPositions
+                Dict.empty
+    in
+    List.foldl
+        (\( nodeId, pos ) acc -> Dict.insert nodeId (ensureUniquePosition pos acc) acc)
+        Dict.empty
+        (Dict.toList merged)
 
 
 
@@ -138,9 +158,9 @@ calculateNodePosition nodeId parentPos offset visited =
 
 
 ensureUniquePosition : Position -> NodePositions -> Position
-ensureUniquePosition position visited =
-    if Dict.values visited |> List.any (\pos -> pos.x == position.x && pos.y == position.y) then
-        ensureUniquePosition { position | x = position.x + const_XY_OFFSET } visited
+ensureUniquePosition position positions =
+    if Dict.values positions |> List.any (\pos -> pos.x == position.x && pos.y == position.y) then
+        ensureUniquePosition { position | x = position.x + const_XY_OFFSET } positions
 
     else
         position

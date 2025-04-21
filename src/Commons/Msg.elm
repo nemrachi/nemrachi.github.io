@@ -1,11 +1,11 @@
 module Commons.Msg exposing (Msg(..))
 
-import Commons.Position exposing (Position)
-import Diagrams.Type exposing (NodeId)
+import Commons.Position exposing (MousePosition, Position)
+import Diagrams.Graph exposing (NodeId)
 
 
 type Msg
     = TextChange String
-    | DragStart NodeId Position
-    | DragAt Position
+    | DragStart NodeId Position MousePosition
+    | DragAt MousePosition
     | DragEnd
