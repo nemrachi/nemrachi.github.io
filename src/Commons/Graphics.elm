@@ -1,4 +1,4 @@
-module Commons.Graphics exposing (arrowLine, calculateNodeSize, calculateViewBoxSize, draggableCircle, draggableDoubleStrokedCircle, draggableRoundedBoxWithText, noSelectableText, personIconWithText)
+module Commons.Graphics exposing (arrowLine, calculateNodeSize, calculateViewBoxSize, draggableCircle, draggableDoubleStrokedCircle, draggableRoundedBoxWithText, personIconWithText)
 
 import Commons.Constant exposing (const_NODE_BOX_WIDTH, const_TEXT_LINE_HEIGHT, const_VIEWBOX_PADDING)
 import Commons.Drag exposing (onMouseDown)

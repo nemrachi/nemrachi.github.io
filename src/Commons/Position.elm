@@ -1,4 +1,4 @@
-module Commons.Position exposing (MousePosition, NodePositions, Position, calculatePositions, const_POSITION_ZERO, ensureUniquePosition, getNodePosition, preservePositionsUniquely, stringifyXY)
+module Commons.Position exposing (MousePosition, NodePositions, Position, calculatePositions, const_POSITION_ZERO, getNodePosition, preservePositionsUniquely, stringifyXY)
 
 import Commons.Constant exposing (const_XY_OFFSET)
 import Commons.Dict exposing (pop)

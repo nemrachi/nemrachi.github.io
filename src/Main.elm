@@ -21,7 +21,7 @@ import List
 
 
 type alias Model =
-    { diagramType : DiagramType
+    { diagramStrategy : DiagramStrategy
     , userText : String
     , graph : Graph
     , nodePositions : NodePositions
@@ -30,22 +30,43 @@ type alias Model =
 
 
 
--- TODO https://sporto.github.io/elm-patterns/basic/impossible-states.html
+-- STRATEGIES
 
 
-type DiagramType
-    = StateDiagram
-    | UseCaseDiagram
-    | Unknown
+type alias DiagramStrategy =
+    { parse : List String -> ( Graph, NodePositions )
+    , render : Graph -> NodePositions -> Html Msg
+    }
+
+
+stateDiagramStrategy : DiagramStrategy
+stateDiagramStrategy =
+    { parse = parseStateDiagram
+    , render = renderStateDiagram
+    }
+
+
+useCaseDiagramStrategy : DiagramStrategy
+useCaseDiagramStrategy =
+    { parse = parseUseCaseDiagram
+    , render = renderUseCaseDiagram
+    }
+
+
+noStrategy : DiagramStrategy
+noStrategy =
+    { parse = \_ -> ( Dict.empty, Dict.empty )
+    , render = \_ _ -> renderExampleText
+    }
 
 
 
--- TODO stateless components https://dev.to/dwayne/stateless-and-stateful-components-no-reusable-views-in-elm-2kg0
+-- INIT
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { diagramType = Unknown
+    ( { diagramStrategy = noStrategy
       , userText = ""
       , graph = Dict.empty
       , nodePositions = Dict.empty
@@ -64,25 +85,17 @@ update msg model =
     case msg of
         TextChange text ->
             let
-                diagramType =
-                    detectDiagramType text
+                diagramStrategy =
+                    detectDiagramStrategy text
 
                 diagramLines =
                     List.tail (String.lines text) |> Maybe.withDefault []
 
                 ( newGraph, newPositions ) =
-                    case diagramType of
-                        StateDiagram ->
-                            parseStateDiagram diagramLines
-
-                        UseCaseDiagram ->
-                            parseUseCaseDiagram diagramLines
-
-                        _ ->
-                            ( Dict.empty, Dict.empty )
+                    diagramStrategy.parse diagramLines
             in
             ( { model
-                | diagramType = diagramType
+                | diagramStrategy = diagramStrategy
                 , userText = text
                 , graph = newGraph
                 , nodePositions = preservePositionsUniquely model.nodePositions newPositions
@@ -119,7 +132,6 @@ update msg model =
 
 
 
--- TODO for the future https://sporto.github.io/elm-patterns/basic/builder-pattern.html
 -- VIEW
 
 
@@ -143,7 +155,6 @@ view model =
 
 
 -- HELPER FUNCTIONS
--- vo funkcionalnom pristupe by bolo komplikovane implementovat antivzor
 
 
 renderDiagram : Model -> Html Msg
@@ -152,15 +163,7 @@ renderDiagram model =
         renderExampleText
 
     else
-        case model.diagramType of
-            StateDiagram ->
-                renderStateDiagram model.graph model.nodePositions
-
-            UseCaseDiagram ->
-                renderUseCaseDiagram model.graph model.nodePositions
-
-            Unknown ->
-                renderExampleText
+        model.diagramStrategy.render model.graph model.nodePositions
 
 
 renderExampleText : Html Msg
@@ -168,17 +171,17 @@ renderExampleText =
     div [] [ Html.pre [] [ Html.text const_EXAMPLE_TEXT ] ]
 
 
-detectDiagramType : String -> DiagramType
-detectDiagramType text =
+detectDiagramStrategy : String -> DiagramStrategy
+detectDiagramStrategy text =
     case getFirstLine text of
         "stateDiagram" ->
-            StateDiagram
+            stateDiagramStrategy
 
         "useCaseDiagram" ->
-            UseCaseDiagram
+            useCaseDiagramStrategy
 
         _ ->
-            Unknown
+            noStrategy
 
 
 getFirstLine : String -> String
