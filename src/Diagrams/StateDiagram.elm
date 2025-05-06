@@ -5,7 +5,7 @@ import Commons.Graphics as Graphics
 import Commons.Msg exposing (Msg)
 import Commons.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ZERO)
 import Commons.TextParser exposing (parseEdgeLabel, parsePoint)
-import Diagrams.Graph exposing (Edge, Graph, Node, NodeId, NodeSize, buildGraph)
+import Diagrams.Graph exposing (Graph, LineParser, Node, NodeId, NodeSize, parseGraph)
 import Dict
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -24,10 +24,7 @@ import Svg.Attributes exposing (..)
 
 parseStateDiagram : List String -> ( Graph, NodePositions )
 parseStateDiagram diagramLines =
-    diagramLines
-        -- https://sporto.github.io/elm-patterns/basic/unwrap-maybe-early.html
-        |> List.filterMap parseLine
-        |> buildGraph
+    parseGraph parseLine diagramLines
         |> (\graph -> ( graph, calculatePositions const_START const_POSITION_ZERO graph Dict.empty ))
 
 
@@ -35,7 +32,7 @@ parseStateDiagram diagramLines =
 -- GET EDGES
 
 
-parseLine : String -> Maybe Edge
+parseLine : LineParser
 parseLine line =
     case String.words line of
         from :: "-->" :: to :: label ->

@@ -1,4 +1,4 @@
-module Diagrams.Graph exposing (Edge, Graph, Node, NodeId, NodeSize, buildGraph)
+module Diagrams.Graph exposing (Edge, Graph, LineParser, Node, NodeId, NodeSize, parseGraph)
 
 import Dict exposing (Dict)
 
@@ -42,7 +42,22 @@ type alias Graph =
 
 
 
+-- INTERFACES
+
+
+type alias LineParser =
+    String -> Maybe Edge
+
+
+
 --- FUNCTIONS
+
+
+parseGraph : LineParser -> List String -> Graph
+parseGraph parser diagramLines =
+    diagramLines
+        |> List.filterMap parser
+        |> buildGraph
 
 
 buildGraph : List Edge -> Graph

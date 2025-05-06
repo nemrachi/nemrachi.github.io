@@ -5,7 +5,7 @@ import Commons.Graphics as Graphics
 import Commons.Msg exposing (Msg)
 import Commons.Position exposing (NodePositions, Position, calculatePositions, const_POSITION_ZERO)
 import Commons.TextParser exposing (getFirstParentNode, parseEdgeLabel)
-import Diagrams.Graph exposing (Edge, Graph, Node, NodeId, buildGraph)
+import Diagrams.Graph exposing (Graph, LineParser, Node, NodeId, parseGraph)
 import Dict
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -17,9 +17,7 @@ import Svg.Attributes exposing (..)
 
 parseUseCaseDiagram : List String -> ( Graph, NodePositions )
 parseUseCaseDiagram diagramLines =
-    diagramLines
-        |> List.filterMap parseLine
-        |> buildGraph
+    parseGraph parseLine diagramLines
         |> (\graph -> ( graph, calculatePositions (getFirstParentNode diagramLines) const_POSITION_ZERO graph Dict.empty ))
 
 
@@ -27,7 +25,7 @@ parseUseCaseDiagram diagramLines =
 -- GET EDGES
 
 
-parseLine : String -> Maybe Edge
+parseLine : LineParser
 parseLine line =
     case String.words line of
         from :: "-->" :: to :: label ->
