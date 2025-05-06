@@ -136,12 +136,12 @@ update msg model =
 
 
 view : Model -> Html Msg
-view model =
+view { diagramStrategy, userText, graph, nodePositions } =
     div Css.Class.flexContainer
         [ div Css.Class.texrAreaContainer
             [ textarea
                 ([ placeholder "Enter code to generate diagram..."
-                 , value model.userText
+                 , value userText
                  , onInput TextChange
                  ]
                     ++ Css.Class.textArea
@@ -149,21 +149,12 @@ view model =
                 []
             ]
         , div Css.Class.diagramContainer
-            [ renderDiagram model ]
+            [ diagramStrategy.render graph nodePositions ]
         ]
 
 
 
 -- HELPER FUNCTIONS
-
-
-renderDiagram : Model -> Html Msg
-renderDiagram model =
-    if Dict.isEmpty model.graph then
-        renderExampleText
-
-    else
-        model.diagramStrategy.render model.graph model.nodePositions
 
 
 renderExampleText : Html Msg
