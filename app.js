@@ -5159,14 +5159,40 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Main$Unknown = {$: 'Unknown'};
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $author$project$Commons$Constant$const_EXAMPLE_TEXT = '\n    Examples:\n\n    stateDiagram\n    [*] --> Still\n    Still --> [*]\n    Still --> Moving\n    Moving --> Still\n    Moving --> Crash\n    Crash --> [*]\n\n    ~ or ~\n\n    useCaseDiagram\n    User --> Register\n    Admin --> DeleteAccount\n    ';
+var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$pre = _VirtualDom_node('pre');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$renderExampleText = A2(
+	$elm$html$Html$div,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$pre,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text($author$project$Commons$Constant$const_EXAMPLE_TEXT)
+				]))
+		]));
+var $author$project$Main$noStrategy = {
+	parse: function (_v0) {
+		return _Utils_Tuple2($elm$core$Dict$empty, $elm$core$Dict$empty);
+	},
+	render: F2(
+		function (_v1, _v2) {
+			return $author$project$Main$renderExampleText;
+		})
+};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{diagram: $elm$core$Dict$empty, diagramType: $author$project$Main$Unknown, drag: $elm$core$Maybe$Nothing, nodePositions: $elm$core$Dict$empty, userText: ''},
+		{diagramStrategy: $author$project$Main$noStrategy, drag: $elm$core$Maybe$Nothing, graph: $elm$core$Dict$empty, nodePositions: $elm$core$Dict$empty, userText: ''},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -5579,16 +5605,16 @@ var $author$project$Commons$Position$Position = F2(
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $author$project$Commons$Mouse$positionDecoder = A3(
+var $author$project$Commons$Drag$positionDecoder = A3(
 	$elm$json$Json$Decode$map2,
 	$author$project$Commons$Position$Position,
 	A2($elm$json$Json$Decode$field, 'clientX', $elm$json$Json$Decode$float),
 	A2($elm$json$Json$Decode$field, 'clientY', $elm$json$Json$Decode$float));
-var $author$project$Commons$Mouse$onMouseMove = $elm$browser$Browser$Events$onMouseMove(
-	A2($elm$json$Json$Decode$map, $author$project$Commons$Msg$DragAt, $author$project$Commons$Mouse$positionDecoder));
+var $author$project$Commons$Drag$onMouseMove = $elm$browser$Browser$Events$onMouseMove(
+	A2($elm$json$Json$Decode$map, $author$project$Commons$Msg$DragAt, $author$project$Commons$Drag$positionDecoder));
 var $author$project$Commons$Msg$DragEnd = {$: 'DragEnd'};
 var $elm$browser$Browser$Events$onMouseUp = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'mouseup');
-var $author$project$Commons$Mouse$onMouseUp = $elm$browser$Browser$Events$onMouseUp(
+var $author$project$Commons$Drag$onMouseUp = $elm$browser$Browser$Events$onMouseUp(
 	$elm$json$Json$Decode$succeed($author$project$Commons$Msg$DragEnd));
 var $author$project$Main$subscriptions = function (model) {
 	var _v0 = model.drag;
@@ -5597,22 +5623,12 @@ var $author$project$Main$subscriptions = function (model) {
 	} else {
 		return $elm$core$Platform$Sub$batch(
 			_List_fromArray(
-				[$author$project$Commons$Mouse$onMouseMove, $author$project$Commons$Mouse$onMouseUp]));
+				[$author$project$Commons$Drag$onMouseMove, $author$project$Commons$Drag$onMouseUp]));
 	}
 };
-var $author$project$Commons$Drag$Drag = F3(
-	function (start, current, nodeId) {
-		return {current: current, nodeId: nodeId, start: start};
-	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
+var $author$project$Commons$Drag$Drag = F4(
+	function (start, current, nodeId, originalNodePosition) {
+		return {current: current, nodeId: nodeId, originalNodePosition: originalNodePosition, start: start};
 	});
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -6024,20 +6040,19 @@ var $author$project$Commons$Drag$applyDragToPosition = F2(
 			var start = maybeDrag.a.start;
 			var current = maybeDrag.a.current;
 			var nodeId = maybeDrag.a.nodeId;
+			var originalNodePosition = maybeDrag.a.originalNodePosition;
 			return A3(
 				$elm$core$Dict$update,
 				nodeId,
-				$elm$core$Maybe$map(
-					function (pos) {
-						return {x: pos.x + (start.x - current.x), y: pos.y + (start.y - current.y)};
-					}),
+				function (_v1) {
+					return $elm$core$Maybe$Just(
+						{x: originalNodePosition.x + (current.x - start.x), y: originalNodePosition.y + (current.y - start.y)});
+				},
 				positions);
 		} else {
 			return positions;
 		}
 	});
-var $author$project$Main$StateDiagram = {$: 'StateDiagram'};
-var $author$project$Main$UseCaseDiagram = {$: 'UseCaseDiagram'};
 var $elm$core$String$lines = _String_lines;
 var $author$project$Main$getFirstLine = function (text) {
 	var _v0 = $elm$core$String$lines(text);
@@ -6048,46 +6063,7 @@ var $author$project$Main$getFirstLine = function (text) {
 		return '';
 	}
 };
-var $author$project$Main$detectDiagramType = function (text) {
-	var _v0 = $author$project$Main$getFirstLine(text);
-	switch (_v0) {
-		case 'stateDiagram':
-			return $author$project$Main$StateDiagram;
-		case 'useCaseDiagram':
-			return $author$project$Main$UseCaseDiagram;
-		default:
-			return $author$project$Main$Unknown;
-	}
-};
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$Diagrams$StateDiagram$addEdgeToDiagram = F2(
-	function (edge, diagram) {
-		var parent = edge.from;
-		var childNode = {edgeLabel: edge.label, name: edge.to};
-		return A3(
-			$elm$core$Dict$update,
-			parent,
-			function (maybeNodes) {
-				return $elm$core$Maybe$Just(
-					A2(
-						$elm$core$List$cons,
-						childNode,
-						A2($elm$core$Maybe$withDefault, _List_Nil, maybeNodes)));
-			},
-			diagram);
-	});
-var $author$project$Diagrams$StateDiagram$buildDiagram = function (edges) {
-	return A3($elm$core$List$foldl, $author$project$Diagrams$StateDiagram$addEdgeToDiagram, $elm$core$Dict$empty, edges);
-};
-var $author$project$Commons$Constant$const_XY_OFFSET = 150;
+var $author$project$Commons$Constant$const_XY_OFFSET = 100;
 var $elm$core$Basics$ge = _Utils_ge;
 var $author$project$Commons$Position$calculateNodePosition = F4(
 	function (nodeId, parentPos, offset, visited) {
@@ -6131,7 +6107,7 @@ var $elm$core$Dict$values = function (dict) {
 		dict);
 };
 var $author$project$Commons$Position$ensureUniquePosition = F2(
-	function (position, visited) {
+	function (position, positions) {
 		ensureUniquePosition:
 		while (true) {
 			if (A2(
@@ -6139,13 +6115,13 @@ var $author$project$Commons$Position$ensureUniquePosition = F2(
 				function (pos) {
 					return _Utils_eq(pos.x, position.x) && _Utils_eq(pos.y, position.y);
 				},
-				$elm$core$Dict$values(visited))) {
+				$elm$core$Dict$values(positions))) {
 				var $temp$position = _Utils_update(
 					position,
 					{x: position.x + $author$project$Commons$Constant$const_XY_OFFSET}),
-					$temp$visited = visited;
+					$temp$positions = positions;
 				position = $temp$position;
-				visited = $temp$visited;
+				positions = $temp$positions;
 				continue ensureUniquePosition;
 			} else {
 				return position;
@@ -6200,7 +6176,6 @@ var $author$project$Commons$Position$assignChildPositions = F3(
 		var finalPositions = _v1.b;
 		return A2($elm$core$Dict$union, visited, finalPositions);
 	});
-var $author$project$Commons$Position$const_POSITION_ONE = {x: 0, y: $author$project$Commons$Constant$const_XY_OFFSET};
 var $elm$core$List$head = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -6223,10 +6198,10 @@ var $author$project$Commons$Dict$pop = F2(
 		}
 	});
 var $author$project$Commons$Position$calculatePositions = F4(
-	function (parentId, position, diagram, visited) {
+	function (parentId, position, graph, visited) {
 		calculatePositions:
 		while (true) {
-			var _v0 = A2($author$project$Commons$Dict$pop, parentId, diagram);
+			var _v0 = A2($author$project$Commons$Dict$pop, parentId, graph);
 			var children = _v0.a;
 			var remainingDiagram = _v0.b;
 			var nextParent = $elm$core$List$head(
@@ -6255,12 +6230,12 @@ var $author$project$Commons$Position$calculatePositions = F4(
 			if (nextParent.$ === 'Just') {
 				var next = nextParent.a;
 				var $temp$parentId = next,
-					$temp$position = $author$project$Commons$Position$const_POSITION_ONE,
-					$temp$diagram = remainingDiagram,
+					$temp$position = A2($author$project$Commons$Position$Position, position.x, position.y + $author$project$Commons$Constant$const_XY_OFFSET),
+					$temp$graph = remainingDiagram,
 					$temp$visited = visitedChildren;
 				parentId = $temp$parentId;
 				position = $temp$position;
-				diagram = $temp$diagram;
+				graph = $temp$graph;
 				visited = $temp$visited;
 				continue calculatePositions;
 			} else {
@@ -6270,6 +6245,39 @@ var $author$project$Commons$Position$calculatePositions = F4(
 	});
 var $author$project$Commons$Position$const_POSITION_ZERO = {x: 0, y: 0};
 var $author$project$Commons$Constant$const_START = '⒮';
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Diagrams$Graph$addEdgeToDiagram = F2(
+	function (edge, graph) {
+		var parent = edge.from;
+		var childNode = {edgeLabel: edge.label, name: edge.to};
+		return A3(
+			$elm$core$Dict$update,
+			parent,
+			function (maybeNodes) {
+				return $elm$core$Maybe$Just(
+					A2(
+						$elm$core$List$cons,
+						childNode,
+						A2($elm$core$Maybe$withDefault, _List_Nil, maybeNodes)));
+			},
+			graph);
+	});
+var $author$project$Diagrams$Graph$buildGraph = function (edges) {
+	return A3($elm$core$List$foldl, $author$project$Diagrams$Graph$addEdgeToDiagram, $elm$core$Dict$empty, edges);
+};
+var $author$project$Diagrams$Graph$parseGraph = F2(
+	function (parser, diagramLines) {
+		return $author$project$Diagrams$Graph$buildGraph(
+			A2($elm$core$List$filterMap, parser, diagramLines));
+	});
 var $author$project$Commons$Constant$const_END = '⒠';
 var $author$project$Commons$TextParser$parseEdgeLabel = function (words) {
 	if (words.b && (words.a === ':')) {
@@ -6307,272 +6315,13 @@ var $author$project$Diagrams$StateDiagram$parseLine = function (line) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Commons$Drag$preserveDraggedPositions = F2(
-	function (oldPositions, newPositions) {
-		return A6(
-			$elm$core$Dict$merge,
-			F3(
-				function (_v0, _v1, acc) {
-					return acc;
-				}),
-			F4(
-				function (key, oldPos, _v2, acc) {
-					return A3($elm$core$Dict$insert, key, oldPos, acc);
-				}),
-			F3(
-				function (key, newPos, acc) {
-					return A3($elm$core$Dict$insert, key, newPos, acc);
-				}),
-			oldPositions,
-			newPositions,
-			$elm$core$Dict$empty);
-	});
-var $author$project$Diagrams$StateDiagram$parseStateDiagram = F2(
-	function (diagramLines, nodePositions) {
-		return function (_v0) {
-			var diagram = _v0.a;
-			var generatedPositions = _v0.b;
-			return _Utils_Tuple2(
-				diagram,
-				A2($author$project$Commons$Drag$preserveDraggedPositions, nodePositions, generatedPositions));
-		}(
-			function (diagram) {
-				return _Utils_Tuple2(
-					diagram,
-					A4($author$project$Commons$Position$calculatePositions, $author$project$Commons$Constant$const_START, $author$project$Commons$Position$const_POSITION_ZERO, diagram, $elm$core$Dict$empty));
-			}(
-				$author$project$Diagrams$StateDiagram$buildDiagram(
-					A2($elm$core$List$filterMap, $author$project$Diagrams$StateDiagram$parseLine, diagramLines))));
-	});
-var $author$project$Diagrams$UseCaseDiagram$addEdgeToDiagram = F2(
-	function (edge, diagram) {
-		var parent = edge.from;
-		var childNode = {edgeLabel: edge.label, name: edge.to};
-		return A3(
-			$elm$core$Dict$update,
-			parent,
-			function (maybeNodes) {
-				return $elm$core$Maybe$Just(
-					A2(
-						$elm$core$List$cons,
-						childNode,
-						A2($elm$core$Maybe$withDefault, _List_Nil, maybeNodes)));
-			},
-			diagram);
-	});
-var $author$project$Diagrams$UseCaseDiagram$buildDiagram = function (edges) {
-	return A3($elm$core$List$foldl, $author$project$Diagrams$UseCaseDiagram$addEdgeToDiagram, $elm$core$Dict$empty, edges);
-};
-var $author$project$Commons$Dict$getFirstKey = function (dict) {
-	return $elm$core$List$head(
-		$elm$core$Dict$keys(dict));
-};
-var $author$project$Diagrams$UseCaseDiagram$parseLine = function (line) {
-	var _v0 = $elm$core$String$words(line);
-	if (((_v0.b && _v0.b.b) && (_v0.b.a === '-->')) && _v0.b.b.b) {
-		var from = _v0.a;
-		var _v1 = _v0.b;
-		var _v2 = _v1.b;
-		var to = _v2.a;
-		var label = _v2.b;
-		return $elm$core$Maybe$Just(
-			{
-				from: from,
-				label: $author$project$Commons$TextParser$parseEdgeLabel(label),
-				to: to
-			});
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Diagrams$UseCaseDiagram$parseUseCaseDiagram = F2(
-	function (diagramLines, nodePositions) {
-		return function (_v0) {
-			var diagram = _v0.a;
-			var generatedPositions = _v0.b;
-			return _Utils_Tuple2(
-				diagram,
-				A2($author$project$Commons$Drag$preserveDraggedPositions, nodePositions, generatedPositions));
-		}(
-			function (diagram) {
-				return _Utils_Tuple2(
-					diagram,
-					A4(
-						$author$project$Commons$Position$calculatePositions,
-						A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							$author$project$Commons$Dict$getFirstKey(diagram)),
-						$author$project$Commons$Position$const_POSITION_ZERO,
-						diagram,
-						$elm$core$Dict$empty));
-			}(
-				$author$project$Diagrams$UseCaseDiagram$buildDiagram(
-					A2($elm$core$List$filterMap, $author$project$Diagrams$UseCaseDiagram$parseLine, diagramLines))));
-	});
-var $elm$core$List$tail = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(xs);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Main$update = F2(
-	function (msg, model) {
-		switch (msg.$) {
-			case 'TextChange':
-				var text = msg.a;
-				var diagramLines = A2(
-					$elm$core$Maybe$withDefault,
-					_List_Nil,
-					$elm$core$List$tail(
-						$elm$core$String$lines(text)));
-				var _v1 = function () {
-					var _v2 = $author$project$Main$detectDiagramType(text);
-					switch (_v2.$) {
-						case 'StateDiagram':
-							return A2($author$project$Diagrams$StateDiagram$parseStateDiagram, diagramLines, model.nodePositions);
-						case 'UseCaseDiagram':
-							return A2($author$project$Diagrams$UseCaseDiagram$parseUseCaseDiagram, diagramLines, model.nodePositions);
-						default:
-							return _Utils_Tuple2($elm$core$Dict$empty, $elm$core$Dict$empty);
-					}
-				}();
-				var newDiagram = _v1.a;
-				var newPositions = _v1.b;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							diagram: newDiagram,
-							diagramType: $author$project$Main$detectDiagramType(text),
-							nodePositions: newPositions,
-							userText: text
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'DragStart':
-				var nodeId = msg.a;
-				var pos = msg.b;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							drag: $elm$core$Maybe$Just(
-								A3($author$project$Commons$Drag$Drag, pos, pos, nodeId))
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'DragAt':
-				var pos = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							drag: A2(
-								$elm$core$Maybe$map,
-								function (d) {
-									return _Utils_update(
-										d,
-										{start: pos});
-								},
-								model.drag)
-						}),
-					$elm$core$Platform$Cmd$none);
-			default:
-				var _v3 = model.drag;
-				if (_v3.$ === 'Just') {
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								drag: $elm$core$Maybe$Nothing,
-								nodePositions: A2($author$project$Commons$Drag$applyDragToPosition, model.drag, model.nodePositions)
-							}),
-						$elm$core$Platform$Cmd$none);
-				} else {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				}
-		}
-	});
-var $author$project$Commons$Msg$TextChange = function (a) {
-	return {$: 'TextChange', a: a};
-};
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $elm$core$String$trim = _String_trim;
-var $author$project$Css$Parser$parseAndStyle = function (styleDef) {
-	var _v0 = A2($elm$core$String$split, ':', styleDef);
-	if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
-		var key = _v0.a;
-		var _v1 = _v0.b;
-		var value = _v1.a;
-		return $elm$core$Maybe$Just(
-			A2(
-				$elm$html$Html$Attributes$style,
-				$elm$core$String$trim(key),
-				$elm$core$String$trim(value)));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Css$Parser$cssStyle = function (css) {
-	return A2(
-		$elm$core$List$filterMap,
-		$author$project$Css$Parser$parseAndStyle,
-		A2($elm$core$String$split, ';', css));
-};
-var $author$project$Css$Class$diagramContainer = $author$project$Css$Parser$cssStyle('\n        width: 50%;\n        padding: 10px;\n        border-left: 1px solid #ccc;\n        ');
-var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$Css$Class$flexContainer = $author$project$Css$Parser$cssStyle('display: flex;');
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $elm$core$Dict$isEmpty = function (dict) {
-	if (dict.$ === 'RBEmpty_elm_builtin') {
-		return true;
-	} else {
-		return false;
-	}
+var $author$project$Diagrams$StateDiagram$parseStateDiagram = function (diagramLines) {
+	return function (graph) {
+		return _Utils_Tuple2(
+			graph,
+			A4($author$project$Commons$Position$calculatePositions, $author$project$Commons$Constant$const_START, $author$project$Commons$Position$const_POSITION_ZERO, graph, $elm$core$Dict$empty));
+	}(
+		A2($author$project$Diagrams$Graph$parseGraph, $author$project$Diagrams$StateDiagram$parseLine, diagramLines));
 };
 var $elm$core$Basics$min = F2(
 	function (x, y) {
@@ -6683,6 +6432,7 @@ var $author$project$Commons$Constant$const_SVG_ARROW = _List_fromArray(
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$svg$Svg$Attributes$preserveAspectRatio = _VirtualDom_attribute('preserveAspectRatio');
 var $author$project$Commons$Constant$const_NODE_BOX_CORNER_RADIUS = 3;
+var $author$project$Commons$Constant$const_NODE_COLOR = 'lightgreen';
 var $author$project$Commons$Constant$const_START_END_NODE_RADIUS = 15;
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
@@ -6712,13 +6462,14 @@ var $author$project$Commons$Graphics$circleWithAttrs = F4(
 				extraAttrs),
 			_List_Nil);
 	});
-var $author$project$Commons$Msg$DragStart = F2(
-	function (a, b) {
-		return {$: 'DragStart', a: a, b: b};
+var $author$project$Commons$Msg$DragStart = F3(
+	function (a, b, c) {
+		return {$: 'DragStart', a: a, b: b, c: c};
 	});
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var $elm$html$Html$Events$on = F2(
 	function (event, decoder) {
 		return A2(
@@ -6727,15 +6478,16 @@ var $elm$html$Html$Events$on = F2(
 			$elm$virtual_dom$VirtualDom$Normal(decoder));
 	});
 var $elm$svg$Svg$Events$on = $elm$html$Html$Events$on;
-var $author$project$Commons$Mouse$onMouseDown = function (nodeId) {
-	return A2(
-		$elm$svg$Svg$Events$on,
-		'mousedown',
-		A2(
-			$elm$json$Json$Decode$map,
-			$author$project$Commons$Msg$DragStart(nodeId),
-			$author$project$Commons$Mouse$positionDecoder));
-};
+var $author$project$Commons$Drag$onMouseDown = F2(
+	function (nodeId, nodeOriginalPosition) {
+		return A2(
+			$elm$svg$Svg$Events$on,
+			'mousedown',
+			A2(
+				$elm$json$Json$Decode$map,
+				A2($author$project$Commons$Msg$DragStart, nodeId, nodeOriginalPosition),
+				$author$project$Commons$Drag$positionDecoder));
+	});
 var $author$project$Commons$Graphics$draggableCircle = F4(
 	function (nodeId, position, radius, color) {
 		return A4(
@@ -6745,7 +6497,7 @@ var $author$project$Commons$Graphics$draggableCircle = F4(
 			color,
 			_List_fromArray(
 				[
-					$author$project$Commons$Mouse$onMouseDown(nodeId)
+					A2($author$project$Commons$Drag$onMouseDown, nodeId, position)
 				]));
 	});
 var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
@@ -6757,7 +6509,7 @@ var $author$project$Commons$Graphics$draggableDoubleStrokedCircle = F5(
 			$elm$svg$Svg$g,
 			_List_fromArray(
 				[
-					$author$project$Commons$Mouse$onMouseDown(nodeId)
+					A2($author$project$Commons$Drag$onMouseDown, nodeId, position)
 				]),
 			_List_fromArray(
 				[
@@ -6781,11 +6533,11 @@ var $author$project$Commons$TextParser$sliceHelper = F4(
 		if (_Utils_cmp(start, total) > -1) {
 			return _List_Nil;
 		} else {
-			var end_ = A2($elm$core$Basics$min, start + chunkSize, total);
+			var end = A2($elm$core$Basics$min, start + chunkSize, total);
 			return A2(
 				$elm$core$List$cons,
-				A3($elm$core$String$slice, start, end_, str),
-				A4($author$project$Commons$TextParser$sliceHelper, chunkSize, end_, total, str));
+				A3($elm$core$String$slice, start, end, str),
+				A4($author$project$Commons$TextParser$sliceHelper, chunkSize, end, total, str));
 		}
 	});
 var $author$project$Commons$TextParser$sliceTextLines = F2(
@@ -6816,7 +6568,6 @@ var $author$project$Css$Class$noSelectSvgAttributes = _List_fromArray(
 var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
 var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
 var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
@@ -6839,7 +6590,7 @@ var $author$project$Commons$Graphics$draggableRoundedBoxWithText = F4(
 			$elm$svg$Svg$g,
 			_List_fromArray(
 				[
-					$author$project$Commons$Mouse$onMouseDown(nodeId)
+					A2($author$project$Commons$Drag$onMouseDown, nodeId, position)
 				]),
 			_List_fromArray(
 				[
@@ -6905,7 +6656,7 @@ var $author$project$Diagrams$StateDiagram$renderNode = F2(
 				A5($author$project$Commons$Graphics$draggableDoubleStrokedCircle, nodeId, position, $author$project$Commons$Constant$const_START_END_NODE_RADIUS, 'black', 'white')
 			]) : _List_fromArray(
 			[
-				A4($author$project$Commons$Graphics$draggableRoundedBoxWithText, nodeId, position, $author$project$Commons$Constant$const_NODE_BOX_CORNER_RADIUS, 'lightgreen')
+				A4($author$project$Commons$Graphics$draggableRoundedBoxWithText, nodeId, position, $author$project$Commons$Constant$const_NODE_BOX_CORNER_RADIUS, $author$project$Commons$Constant$const_NODE_COLOR)
 			]));
 	});
 var $elm$core$Basics$atan2 = _Basics_atan2;
@@ -6941,7 +6692,7 @@ var $author$project$Commons$Graphics$arrowLine = F5(
 	function (fromNodeId, fromSize, positions, toNode, toSize) {
 		var toPosition = A2(
 			$elm$core$Maybe$withDefault,
-			$author$project$Commons$Position$const_POSITION_ONE,
+			$author$project$Commons$Position$const_POSITION_ZERO,
 			A2($elm$core$Dict$get, toNode.name, positions));
 		var fromPosition = A2($author$project$Commons$Position$getNodePosition, fromNodeId, positions);
 		var _v0 = A4($author$project$Commons$Graphics$calculateArrowPointsForBox, fromPosition, fromSize, toPosition, toSize);
@@ -6973,9 +6724,9 @@ var $author$project$Commons$Graphics$arrowLine = F5(
 var $author$project$Commons$Graphics$calculateNodeSize = function (nodeId) {
 	return $author$project$Commons$Graphics$calculateNodeSizeWithLines(nodeId).a;
 };
-var $author$project$Commons$Constant$const_SMALL_NODE_BOX_SIZE = {height: 1, width: 1};
+var $author$project$Commons$Constant$const_START_END_NODE_SIZE = {height: 30, width: 30};
 var $author$project$Diagrams$StateDiagram$getNodeSize = function (nodeId) {
-	return (_Utils_eq(nodeId, $author$project$Commons$Constant$const_START) || _Utils_eq(nodeId, $author$project$Commons$Constant$const_END)) ? $author$project$Commons$Constant$const_SMALL_NODE_BOX_SIZE : $author$project$Commons$Graphics$calculateNodeSize(nodeId);
+	return (_Utils_eq(nodeId, $author$project$Commons$Constant$const_START) || _Utils_eq(nodeId, $author$project$Commons$Constant$const_END)) ? $author$project$Commons$Constant$const_START_END_NODE_SIZE : $author$project$Commons$Graphics$calculateNodeSize(nodeId);
 };
 var $author$project$Diagrams$StateDiagram$renderTransition = F3(
 	function (parentId, positions, child) {
@@ -6990,7 +6741,7 @@ var $author$project$Diagrams$StateDiagram$renderTransition = F3(
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $author$project$Diagrams$StateDiagram$renderStateDiagram = F2(
-	function (diaram, positions) {
+	function (graph, positions) {
 		var vb = $author$project$Commons$Graphics$calculateViewBoxSize(positions);
 		return A2(
 			$elm$svg$Svg$svg,
@@ -7014,7 +6765,7 @@ var $author$project$Diagrams$StateDiagram$renderStateDiagram = F2(
 								A2($author$project$Diagrams$StateDiagram$renderTransition, parent, positions),
 								children);
 						},
-						$elm$core$Dict$toList(diaram)),
+						$elm$core$Dict$toList(graph)),
 					A2(
 						$elm$core$List$concatMap,
 						function (_v1) {
@@ -7024,6 +6775,55 @@ var $author$project$Diagrams$StateDiagram$renderStateDiagram = F2(
 						},
 						$elm$core$Dict$toList(positions)))));
 	});
+var $author$project$Main$stateDiagramStrategy = {parse: $author$project$Diagrams$StateDiagram$parseStateDiagram, render: $author$project$Diagrams$StateDiagram$renderStateDiagram};
+var $author$project$Commons$TextParser$extractFirstWordHelper = function (line) {
+	var _v0 = $elm$core$String$words(line);
+	if ((_v0.b && _v0.b.b) && (_v0.b.a === '-->')) {
+		var source = _v0.a;
+		var _v1 = _v0.b;
+		return $elm$core$Maybe$Just(source);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Commons$TextParser$getFirstParentNode = function (diagramLines) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		'',
+		$elm$core$List$head(
+			A2($elm$core$List$filterMap, $author$project$Commons$TextParser$extractFirstWordHelper, diagramLines)));
+};
+var $author$project$Diagrams$UseCaseDiagram$parseLine = function (line) {
+	var _v0 = $elm$core$String$words(line);
+	if (((_v0.b && _v0.b.b) && (_v0.b.a === '-->')) && _v0.b.b.b) {
+		var from = _v0.a;
+		var _v1 = _v0.b;
+		var _v2 = _v1.b;
+		var to = _v2.a;
+		var label = _v2.b;
+		return $elm$core$Maybe$Just(
+			{
+				from: from,
+				label: $author$project$Commons$TextParser$parseEdgeLabel(label),
+				to: to
+			});
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Diagrams$UseCaseDiagram$parseUseCaseDiagram = function (diagramLines) {
+	return function (graph) {
+		return _Utils_Tuple2(
+			graph,
+			A4(
+				$author$project$Commons$Position$calculatePositions,
+				$author$project$Commons$TextParser$getFirstParentNode(diagramLines),
+				$author$project$Commons$Position$const_POSITION_ZERO,
+				graph,
+				$elm$core$Dict$empty));
+	}(
+		A2($author$project$Diagrams$Graph$parseGraph, $author$project$Diagrams$UseCaseDiagram$parseLine, diagramLines));
+};
 var $elm$core$List$member = F2(
 	function (x, xs) {
 		return A2(
@@ -7082,7 +6882,7 @@ var $author$project$Commons$Graphics$personIconWithText = F2(
 			$elm$svg$Svg$g,
 			_List_fromArray(
 				[
-					$author$project$Commons$Mouse$onMouseDown(nodeId)
+					A2($author$project$Commons$Drag$onMouseDown, nodeId, position)
 				]),
 			_List_fromArray(
 				[
@@ -7165,7 +6965,7 @@ var $author$project$Diagrams$UseCaseDiagram$renderNode = F3(
 				A2($author$project$Commons$Graphics$personIconWithText, nodeId, position)
 			]) : _List_fromArray(
 			[
-				A4($author$project$Commons$Graphics$draggableRoundedBoxWithText, nodeId, position, $author$project$Commons$Constant$const_NODE_BOX_CORNER_RADIUS, 'lightgreen')
+				A4($author$project$Commons$Graphics$draggableRoundedBoxWithText, nodeId, position, $author$project$Commons$Constant$const_NODE_BOX_CORNER_RADIUS, $author$project$Commons$Constant$const_NODE_COLOR)
 			]);
 	});
 var $author$project$Commons$Constant$const_PERSON_NODE_SIZE = {height: 70, width: 30};
@@ -7180,9 +6980,9 @@ var $author$project$Diagrams$UseCaseDiagram$renderTransition = F3(
 			$author$project$Commons$Graphics$calculateNodeSize(child.name));
 	});
 var $author$project$Diagrams$UseCaseDiagram$renderUseCaseDiagram = F2(
-	function (diagram, positions) {
+	function (graph, positions) {
 		var vb = $author$project$Commons$Graphics$calculateViewBoxSize(positions);
-		var actorIds = $elm$core$Dict$keys(diagram);
+		var actorIds = $elm$core$Dict$keys(graph);
 		return A2(
 			$elm$svg$Svg$svg,
 			_List_fromArray(
@@ -7205,7 +7005,7 @@ var $author$project$Diagrams$UseCaseDiagram$renderUseCaseDiagram = F2(
 								A2($author$project$Diagrams$UseCaseDiagram$renderTransition, parent, positions),
 								children);
 						},
-						$elm$core$Dict$toList(diagram)),
+						$elm$core$Dict$toList(graph)),
 					A2(
 						$elm$core$List$concatMap,
 						function (_v1) {
@@ -7215,41 +7015,217 @@ var $author$project$Diagrams$UseCaseDiagram$renderUseCaseDiagram = F2(
 						},
 						$elm$core$Dict$toList(positions)))));
 	});
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Main$renderDiagram = function (model) {
-	var _v0 = model.diagramType;
-	switch (_v0.$) {
-		case 'StateDiagram':
-			return $elm$core$Dict$isEmpty(model.diagram) ? A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Invalid state diagram syntax')
-					])) : A2(
-				$author$project$Diagrams$StateDiagram$renderStateDiagram,
-				model.diagram,
-				A2($author$project$Commons$Drag$applyDragToPosition, model.drag, model.nodePositions));
-		case 'UseCaseDiagram':
-			return $elm$core$Dict$isEmpty(model.diagram) ? A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Invalid use case diagram syntax')
-					])) : A2(
-				$author$project$Diagrams$UseCaseDiagram$renderUseCaseDiagram,
-				model.diagram,
-				A2($author$project$Commons$Drag$applyDragToPosition, model.drag, model.nodePositions));
+var $author$project$Main$useCaseDiagramStrategy = {parse: $author$project$Diagrams$UseCaseDiagram$parseUseCaseDiagram, render: $author$project$Diagrams$UseCaseDiagram$renderUseCaseDiagram};
+var $author$project$Main$detectDiagramStrategy = function (text) {
+	var _v0 = $author$project$Main$getFirstLine(text);
+	switch (_v0) {
+		case 'stateDiagram':
+			return $author$project$Main$stateDiagramStrategy;
+		case 'useCaseDiagram':
+			return $author$project$Main$useCaseDiagramStrategy;
 		default:
-			return A2($elm$html$Html$div, _List_Nil, _List_Nil);
+			return $author$project$Main$noStrategy;
 	}
 };
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Commons$Position$preservePositionsUniquely = F2(
+	function (oldPositions, newPositions) {
+		var merged = A6(
+			$elm$core$Dict$merge,
+			F3(
+				function (_v1, _v2, acc) {
+					return acc;
+				}),
+			F4(
+				function (key, oldPos, _v3, acc) {
+					return A3($elm$core$Dict$insert, key, oldPos, acc);
+				}),
+			F3(
+				function (key, newPos, acc) {
+					return A3($elm$core$Dict$insert, key, newPos, acc);
+				}),
+			oldPositions,
+			newPositions,
+			$elm$core$Dict$empty);
+		return A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, acc) {
+					var nodeId = _v0.a;
+					var pos = _v0.b;
+					return A3(
+						$elm$core$Dict$insert,
+						nodeId,
+						A2($author$project$Commons$Position$ensureUniquePosition, pos, acc),
+						acc);
+				}),
+			$elm$core$Dict$empty,
+			$elm$core$Dict$toList(merged));
+	});
+var $elm$core$List$tail = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(xs);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Main$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'TextChange':
+				var text = msg.a;
+				var diagramStrategy = $author$project$Main$detectDiagramStrategy(text);
+				var diagramLines = A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					$elm$core$List$tail(
+						$elm$core$String$lines(text)));
+				var _v1 = diagramStrategy.parse(diagramLines);
+				var newGraph = _v1.a;
+				var newPositions = _v1.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							diagramStrategy: diagramStrategy,
+							graph: newGraph,
+							nodePositions: A2($author$project$Commons$Position$preservePositionsUniquely, model.nodePositions, newPositions),
+							userText: text
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'DragStart':
+				var nodeId = msg.a;
+				var nodePos = msg.b;
+				var mousePos = msg.c;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							drag: $elm$core$Maybe$Just(
+								A4($author$project$Commons$Drag$Drag, mousePos, mousePos, nodeId, nodePos))
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'DragAt':
+				var pos = msg.a;
+				var drag = A2(
+					$elm$core$Maybe$map,
+					function (d) {
+						return _Utils_update(
+							d,
+							{current: pos});
+					},
+					model.drag);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							drag: drag,
+							nodePositions: A2($author$project$Commons$Drag$applyDragToPosition, drag, model.nodePositions)
+						}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				var _v2 = model.drag;
+				if (_v2.$ === 'Just') {
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{drag: $elm$core$Maybe$Nothing}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+		}
+	});
+var $author$project$Commons$Msg$TextChange = function (a) {
+	return {$: 'TextChange', a: a};
+};
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $elm$core$String$trim = _String_trim;
+var $author$project$Css$Parser$parseAndStyle = function (styleDef) {
+	var _v0 = A2($elm$core$String$split, ':', styleDef);
+	if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
+		var key = _v0.a;
+		var _v1 = _v0.b;
+		var value = _v1.a;
+		return $elm$core$Maybe$Just(
+			A2(
+				$elm$html$Html$Attributes$style,
+				$elm$core$String$trim(key),
+				$elm$core$String$trim(value)));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Css$Parser$cssStyle = function (css) {
+	return A2(
+		$elm$core$List$filterMap,
+		$author$project$Css$Parser$parseAndStyle,
+		A2($elm$core$String$split, ';', css));
+};
+var $author$project$Css$Class$diagramContainer = $author$project$Css$Parser$cssStyle('\n        width: 50%;\n        padding: 10px;\n        border-left: 1px solid #ccc;\n        ');
+var $author$project$Css$Class$flexContainer = $author$project$Css$Parser$cssStyle('display: flex;');
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $author$project$Css$Class$texrAreaContainer = $author$project$Css$Parser$cssStyle('\n        width: 50%;\n        padding: 10px;\n        ');
 var $author$project$Css$Class$textArea = $author$project$Css$Parser$cssStyle('\n        width: 100%;\n        height: 97vh;\n        ');
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
-var $author$project$Main$view = function (model) {
+var $author$project$Main$view = function (_v0) {
+	var diagramStrategy = _v0.diagramStrategy;
+	var userText = _v0.userText;
+	var graph = _v0.graph;
+	var nodePositions = _v0.nodePositions;
 	return A2(
 		$elm$html$Html$div,
 		$author$project$Css$Class$flexContainer,
@@ -7266,7 +7242,7 @@ var $author$project$Main$view = function (model) {
 							_List_fromArray(
 								[
 									$elm$html$Html$Attributes$placeholder('Enter code to generate diagram...'),
-									$elm$html$Html$Attributes$value(model.userText),
+									$elm$html$Html$Attributes$value(userText),
 									$elm$html$Html$Events$onInput($author$project$Commons$Msg$TextChange)
 								]),
 							$author$project$Css$Class$textArea),
@@ -7277,7 +7253,7 @@ var $author$project$Main$view = function (model) {
 				$author$project$Css$Class$diagramContainer,
 				_List_fromArray(
 					[
-						$author$project$Main$renderDiagram(model)
+						A2(diagramStrategy.render, graph, nodePositions)
 					]))
 			]));
 };
